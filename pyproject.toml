@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "friendbot"
+version = "0.1.0"
+description = ""
+authors = ["David <161997989+lintyourcode@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
