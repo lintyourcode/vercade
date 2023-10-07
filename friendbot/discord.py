@@ -4,7 +4,7 @@ import random
 import discord
 import openai
 
-from friendbot.friend import Friend
+from friendbot.friend import Friend, Message
 
 
 class DiscordClient(discord.Client):
@@ -94,14 +94,20 @@ class DiscordClient(discord.Client):
                     if not self._should_respond_to(last_message):
                         return
 
-                    response = self._friend(last_message.content)
+                    response = self._friend(
+                        Message(
+                            content=last_message.content,
+                            author=last_message.author.name,
+                        )
+                    )
 
                 except openai.OpenAIError as e:
                     print(f"OpenAIError ({e}) - waiting to retry...")
                     # Wait before trying again
                     await self._sleep(60.0, 3.0 * 60.0)
 
-            await channel.send(response)
+            if response:
+                await channel.send(response.content)
 
     async def _on_message(self, message: discord.Message) -> None:
         channel = message.channel
