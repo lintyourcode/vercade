@@ -137,4 +137,6 @@ class Friend:
         self._conversation.append(message)
         action = self._decide_action()
         print(f"Action: {action}")
+        if len(self._conversation) > 20:
+            self._conversation = self._conversation[-20:]
         return self._perform_action(action)
