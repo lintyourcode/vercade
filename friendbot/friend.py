@@ -114,7 +114,7 @@ class Friend:
         completion = openai.ChatCompletion.create(
             model="gpt-4",
             temperature=0.9,
-            presence_penalty=0.6,
+            presence_penalty=1.5,
             messages=messages,
         )
         raw_action = json.loads(completion.choices[0].message.content)
