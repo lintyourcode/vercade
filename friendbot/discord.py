@@ -113,7 +113,7 @@ class DiscordClient(discord.Client):
         channel = message.channel
 
         # Initial delay
-        await self._sleep(-75.0, 60.0)
+        await self._sleep(-75.0, 30.0)
 
         # Send a few messages
         await self._send_messages(channel)
