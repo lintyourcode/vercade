@@ -120,7 +120,7 @@ class DiscordClient(discord.Client):
 
         # Sometimes send a message in an hour or so
         if random.randint(0, 1) == 0:
-            await self._sleep(60.0, 2.0 * 60.0 * 60.0)
+            await self._sleep(60.0, 5.0 * 60.0)
             await self._send_messages(channel)
 
         # Always check and respond to existing messages after we're done with
