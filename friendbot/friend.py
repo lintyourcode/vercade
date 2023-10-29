@@ -44,9 +44,6 @@ class Friend:
         if not identity:
             raise ValueError("identity must be a non-empty string")
 
-        if os.getenv("SERPER_API_KEY") is None:
-            raise ValueError("SERPER_API_KEY environment variable must be set")
-
         if os.getenv("OPENAI_API_KEY") is None:
             raise ValueError("OPENAI_API_KEY environment variable must be set")
 
