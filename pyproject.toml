@@ -11,6 +11,7 @@ openai = "^0.28.1"
 python-dotenv = "^1.0.0"
 discord = "^2.3.2"
 langchain = "^0.0.325"
+tiktoken = "^0.5.1"
 
 
 [tool.poetry.group.dev.dependencies]

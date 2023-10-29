@@ -4,7 +4,7 @@ import os
 from typing import Any, Dict, List, Optional
 
 from langchain.chat_models import ChatOpenAI
-from langchain.memory import ConversationBufferWindowMemory
+from langchain.memory import ConversationSummaryBufferMemory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 
@@ -51,7 +51,12 @@ class Friend:
         if os.getenv("OPENAI_API_KEY") is None:
             raise ValueError("OPENAI_API_KEY environment variable must be set")
 
-        model = ChatOpenAI(model="gpt-4", temperature=0.9, presence_penalty=1.5)
+        accurate_model = ChatOpenAI(
+            model="gpt-4", temperature=0.9, presence_penalty=1.5
+        )
+        fast_model = ChatOpenAI(
+            model="gpt-3.5-turbo", temperature=0.9, presence_penalty=1.5
+        )
         prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", "{identity}"),
@@ -59,7 +64,9 @@ class Friend:
                 ("human", "{input}"),
             ]
         )
-        self._memory = ConversationBufferWindowMemory(k=20, return_messages=True)
+        self._memory = ConversationSummaryBufferMemory(
+            llm=fast_model, return_messages=True
+        )
         self._runnable = (
             {
                 "input": RunnablePassthrough(),
@@ -67,7 +74,7 @@ class Friend:
                 | itemgetter("history"),
             }
             | prompt.partial(identity=identity)
-            | model
+            | accurate_model
         )
 
     def __call__(self, message: Message) -> Optional[Message]:
