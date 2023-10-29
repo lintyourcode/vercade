@@ -53,9 +53,7 @@ class Friend:
         accurate_model = ChatOpenAI(
             model="gpt-4", temperature=0.9, presence_penalty=1.5
         )
-        fast_model = ChatOpenAI(
-            model="gpt-3.5-turbo", temperature=0.9, presence_penalty=1.5
-        )
+        fast_model = ChatOpenAI(model="gpt-3.5-turbo")
         prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", "{identity}"),
