@@ -67,11 +67,10 @@ class Friend:
             llm=fast_model, return_messages=True
         )
         self._runnable = (
-            {
-                "input": RunnablePassthrough(),
-                "history": RunnableLambda(self._memory.load_memory_variables)
-                | itemgetter("history"),
-            }
+            RunnablePassthrough.assign(
+                history=RunnableLambda(self._memory.load_memory_variables)
+                | itemgetter("history")
+            )
             | prompt.partial(identity=identity)
             | accurate_model
         )
