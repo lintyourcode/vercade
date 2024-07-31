@@ -10,6 +10,7 @@ python = "^3.9"
 openai = "^1.37.1"
 python-dotenv = "^1.0.0"
 discord = "^2.3.2"
+litellm = "^1.42.5"
 
 
 [tool.poetry.group.dev.dependencies]

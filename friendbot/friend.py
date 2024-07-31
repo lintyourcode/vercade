@@ -2,7 +2,7 @@ import json
 import os
 from typing import Any, Dict, List, Optional
 
-import openai
+from litellm import completion, moderation
 
 
 _USER_MESSAGE_TEMPLATE = """
@@ -58,16 +58,16 @@ class Action:
 
 
 class Friend:
-    def __init__(self, identity: str) -> None:
+    def __init__(self, identity: str, llm: Optional[str] = None) -> None:
         if not identity:
             raise ValueError("identity must be a non-empty string")
 
         if os.getenv("OPENAI_API_KEY") is None:
             raise ValueError("OPENAI_API_KEY environment variable must be set")
-        self.openai = openai.Client(api_key=os.getenv("OPENAI_API_KEY"))
 
         self._identity = identity
         self._conversation = []
+        self._llm = llm or os.getenv("LLM")
 
     def _format_author(self, author: str) -> str:
         if author == self._identity:
@@ -101,20 +101,20 @@ class Friend:
         messages = self._messages
         print(f"Messages: {messages}")
         for message in messages:
-            moderation = self.openai.moderations.create(input=message["content"])
-            if moderation.results[0].flagged:
-                print(f"Message flagged: {message} ({moderation})")
+            result = moderation(input=message["content"])
+            if result.results[0].flagged:
+                print(f"Message flagged: {message} ({result})")
                 return {
                     "type": "None",
                 }
 
-        completion = self.openai.chat.completions.create(
-            model="gpt-4o",
+        result = completion(
+            model=self._llm,
             temperature=0.9,
             presence_penalty=1.5,
             messages=messages,
         )
-        raw_action = json.loads(completion.choices[0].message.content)
+        raw_action = json.loads(result.choices[0].message.content)
         return Action(**raw_action)
 
     def _perform_action(self, action: Action) -> Any:
