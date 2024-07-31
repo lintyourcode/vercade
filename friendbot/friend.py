@@ -64,7 +64,7 @@ class Friend:
 
         if os.getenv("OPENAI_API_KEY") is None:
             raise ValueError("OPENAI_API_KEY environment variable must be set")
-        openai.api_key = os.getenv("OPENAI_API_KEY")
+        self.openai = openai.Client(api_key=os.getenv("OPENAI_API_KEY"))
 
         self._identity = identity
         self._conversation = []
@@ -101,14 +101,14 @@ class Friend:
         messages = self._messages
         print(f"Messages: {messages}")
         for message in messages:
-            moderation = openai.Moderation.create(input=message["content"])
+            moderation = self.openai.moderations.create(input=message["content"])
             if moderation.results[0].flagged:
                 print(f"Message flagged: {message} ({moderation})")
                 return {
                     "type": "None",
                 }
 
-        completion = openai.ChatCompletion.create(
+        completion = self.openai.chat.completions.create(
             model="gpt-4",
             temperature=0.9,
             presence_penalty=1.5,
