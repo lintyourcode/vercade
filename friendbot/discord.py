@@ -4,7 +4,7 @@ import random
 import discord
 import openai
 
-from friendbot.friend import Friend, Message
+from friendbot.friend import Friend, Message, MessageContext
 
 
 class DiscordClient(discord.Client):
@@ -86,28 +86,41 @@ class DiscordClient(discord.Client):
         return False
 
     async def _send_messages(self, channel: discord.TextChannel) -> None:
-        async with channel.typing():
-            responses = None
-            while responses is None:
-                try:
-                    last_message = await self._get_last_message(channel)
-                    if not self._should_respond_to(last_message):
-                        return
+        responses = None
+        while responses is None:
+            try:
+                last_message = await self._get_last_message(channel)
+                if not self._should_respond_to(last_message):
+                    return
 
-                    responses = self._friend(
-                        Message(
-                            content=last_message.content,
-                            author=last_message.author.name,
-                        )
-                    )
+                responses = self._friend(
+                    MessageContext(
+                        server=channel.guild.name,
+                        channel=channel.name,
+                    ),
+                    Message(
+                        content=last_message.content,
+                        author=last_message.author.name,
+                    ),
+                )
 
-                except openai.OpenAIError as e:
-                    print(f"OpenAIError ({e}) - waiting to retry...")
-                    # Wait before trying again
-                    await self._sleep(60.0, 3.0 * 60.0)
+            except openai.OpenAIError as e:
+                print(f"OpenAIError ({e}) - waiting to retry...")
+                # Wait before trying again
+                await self._sleep(60.0, 3.0 * 60.0)
 
-            for response in responses:
-                await channel.send(response.content)
+        for guild_name, conversations in responses.items():
+            for channel_name, responses in conversations.items():
+                for response in responses:
+                    guild = discord.utils.get(self.guilds, name=guild_name)
+                    if not guild:
+                        raise ValueError(f"Guild {guild_name} not found")
+                    channel = discord.utils.get(guild.text_channels, name=channel_name)
+                    if not channel:
+                        raise ValueError(f"Channel {channel_name} not found")
+                    async with channel.typing():
+                        await asyncio.sleep(len(response.content) / 20.0)
+                        await channel.send(response.content)
 
     async def _on_message(self, message: discord.Message) -> None:
         channel = message.channel

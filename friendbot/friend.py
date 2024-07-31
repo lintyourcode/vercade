@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 import json
 import os
@@ -6,9 +7,13 @@ from typing import Any, Dict, List, Optional, Union
 from litellm import ChatCompletionMessageToolCall, completion, moderation
 
 
-_USER_MESSAGE = (
-    "You just received a message in a Discord channel. How would you like to respond?"
-)
+_USER_MESSAGE_TEMPLATE = "You just received a message in the Discord server {server}'s channel #{channel}. How would you like to respond?"
+
+
+class MessageContext:
+    def __init__(self, server: str, channel: str) -> None:
+        self.server = server
+        self.channel = channel
 
 
 class Message:
@@ -54,7 +59,7 @@ class Friend:
             raise ValueError("OPENAI_API_KEY environment variable must be set")
 
         self._identity = identity
-        self._conversation = []
+        self._conversations = defaultdict(lambda: defaultdict(list))
         self._llm = llm or os.getenv("LLM")
         self._functions = {
             "date_and_time": self._date_and_time,
@@ -80,27 +85,39 @@ class Friend:
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z")
 
     def _read_messages(self, input: Any) -> str:
-        if self._parse_input(input):
-            return "Unexpected argument: {input}"
-        if len(self._conversation) > 20:
-            self._conversation = self._conversation[-20:]
+        input = self._parse_input(input)
+        server = input["server"]
+        channel = input["channel"]
+        if (
+            server not in self._conversations
+            or channel not in self._conversations[server]
+        ):
+            return "No conversation found"
+        conversation = self._conversations[server][channel]
+        if len(conversation) > 20:
+            conversation = conversation[-20:]
+            self._conversations[server][channel] = conversation
         return json.dumps(
             [
                 {
                     "author": self._format_author(message.author),
                     "content": message.content,
                 }
-                for message in self._conversation
+                for message in conversation
                 if not moderation(input=message.content).results[0].flagged
             ]
         )
 
-    def _send_message(self, input: Union[str, Dict[str, Any]]) -> str:
-        content = self._parse_input(input)["content"]
+    def _send_message(self, input: str) -> str:
+        input = self._parse_input(input)
+        content = input["content"]
+        server = input["server"]
+        channel = input["channel"]
         if not content:
             return "content must be a non-empty string"
         message = Message(content=content, author=self._identity)
-        self._conversation.append(message)
+        self._conversations[server][channel].append(message)
+        return "Message sent"
 
     @property
     def _tools(self) -> List[Dict[str, Any]]:
@@ -120,12 +137,20 @@ class Friend:
                 "input_schema": {
                     "type": "object",
                     "properties": {
+                        "server": {
+                            "type": "string",
+                            "description": "The name of the Discord server to send the message in",
+                        },
+                        "channel": {
+                            "type": "string",
+                            "description": "The name of the Discord channel to send the message in",
+                        },
                         "content": {
                             "type": "string",
                             "description": "The markdown content of the message",
                         },
                     },
-                    "required": ["content"],
+                    "required": ["server", "channel", "content"],
                 },
             },
             {
@@ -133,8 +158,17 @@ class Friend:
                 "description": "Read the 20 most recent messages from the current Discord channel",
                 "input_schema": {
                     "type": "object",
-                    "properties": {},
-                    "required": [],
+                    "properties": {
+                        "server": {
+                            "type": "string",
+                            "description": "The name of the Discord server to read the messages from",
+                        },
+                        "channel": {
+                            "type": "string",
+                            "description": "The name of the Discord channel to read the messages from",
+                        },
+                    },
+                    "required": ["server", "channel"],
                 },
             },
         ]
@@ -154,13 +188,20 @@ class Friend:
             "content": result,
         }
 
-    def __call__(self, message: Message) -> List[Message]:
+    def __call__(self, context: MessageContext, message: Message) -> List[Message]:
         if not message:
             raise ValueError("message cannot be None")
 
-        self._conversation.append(message)
+        conversation = self._conversations[context.server][context.channel]
+        conversation.append(message)
 
-        conversation_before = self._conversation[:]
+        conversations_before = {
+            server: {
+                channel: conversation[:]
+                for channel, conversation in self._conversations[server].items()
+            }
+            for server in self._conversations
+        }
 
         # Conversation with LLM
         chat_history = [
@@ -170,7 +211,9 @@ class Friend:
             },
             {
                 "role": "user",
-                "content": _USER_MESSAGE,
+                "content": _USER_MESSAGE_TEMPLATE.format(
+                    server=context.server, channel=context.channel
+                ),
             },
         ]
         ran_tools = False
@@ -200,4 +243,20 @@ class Friend:
             ]
             ran_tools = True
 
-        return self._conversation[len(conversation_before) :]
+        diffs = {}
+        for server, channels in self._conversations.items():
+            for channel, conversation in channels.items():
+                if server not in diffs:
+                    diffs[server] = {}
+                if channel not in diffs[server]:
+                    diffs[server][channel] = []
+                if (
+                    server in conversations_before
+                    and channel in conversations_before[server]
+                ):
+                    diffs[server][channel] = conversation[
+                        len(conversations_before[server][channel]) :
+                    ]
+                else:
+                    diffs[server][channel] = conversation
+        return diffs
