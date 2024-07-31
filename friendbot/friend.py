@@ -1,26 +1,13 @@
 import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
-from litellm import completion, moderation
+from litellm import ChatCompletionMessageToolCall, completion, moderation
 
 
-_USER_MESSAGE_TEMPLATE = """
-Please read the following conversation and respond in either of the following JSON formats:
-
-- Use this format if you want to send a message in the conversation:
-  {{
-      "type": "Send Message",
-      "message": {{message}}
-  }}
-- Use this format if you don't want to send a message in the conversation:
-  {{
-      "type": "None",
-  }}
-
-Conversation:
-{conversation}
-""".strip()
+_USER_MESSAGE = (
+    "You just received a message in a Discord channel. How would you like to respond?"
+)
 
 
 class Message:
@@ -68,6 +55,10 @@ class Friend:
         self._identity = identity
         self._conversation = []
         self._llm = llm or os.getenv("LLM")
+        self._functions = {
+            "send_message": self._send_message,
+            "read_messages": self._read_messages,
+        }
 
     def _format_author(self, author: str) -> str:
         if author == self._identity:
@@ -75,64 +66,122 @@ class Friend:
         else:
             return author
 
-    @property
-    def _system_message(self) -> Dict[str, str]:
-        return {
-            "role": "system",
-            "content": self._identity,
-        }
+    def _parse_input(self, input: str) -> Dict[str, Any]:
+        try:
+            return json.loads(input)
+        except json.JSONDecodeError:
+            return {"content": input}
 
-    @property
-    def _user_message(self) -> Dict[str, str]:
-        formatted_conversation = "\n".join(
-            [f"{message.author}: {message.content}" for message in self._conversation]
+    def _read_messages(self, input: Any) -> str:
+        if self._parse_input(input):
+            return "Unexpected argument: {input}"
+        if len(self._conversation) > 20:
+            self._conversation = self._conversation[-20:]
+        return json.dumps(
+            [
+                {
+                    "author": self._format_author(message.author),
+                    "content": message.content,
+                }
+                for message in self._conversation
+                if not moderation(input=message.content).results[0].flagged
+            ]
         )
-        content = _USER_MESSAGE_TEMPLATE.format(conversation=formatted_conversation)
-        return {"role": "user", "content": content}
+
+    def _send_message(self, input: Union[str, Dict[str, Any]]) -> str:
+        content = self._parse_input(input)["content"]
+        if not content:
+            return "content must be a non-empty string"
+        message = Message(content=content, author=self._identity)
+        self._conversation.append(message)
 
     @property
-    def _messages(self) -> List[Dict[str, str]]:
+    def _tools(self) -> List[Dict[str, Any]]:
         return [
-            self._system_message,
-            self._user_message,
+            {
+                "name": "send_message",
+                "description": "Send a message in the current Discord channel",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "content": {
+                            "type": "string",
+                            "description": "The markdown content of the message",
+                        },
+                    },
+                    "required": ["content"],
+                },
+            },
+            {
+                "name": "read_messages",
+                "description": "Read the 20 most recent messages from the current Discord channel",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                },
+            },
         ]
 
-    def _decide_action(self) -> Action:
-        messages = self._messages
-        print(f"Messages: {messages}")
-        for message in messages:
-            result = moderation(input=message["content"])
-            if result.results[0].flagged:
-                print(f"Message flagged: {message} ({result})")
-                return {
-                    "type": "None",
-                }
+    def _run_tool(self, tool_call: ChatCompletionMessageToolCall) -> None:
+        if tool_call.function.name not in self._functions:
+            raise ValueError(f"Unknown tool: {tool_call.name}")
 
-        result = completion(
-            model=self._llm,
-            temperature=0.9,
-            messages=messages,
+        result = self._functions[tool_call.function.name](tool_call.function.arguments)
+        print(
+            f"Tool {tool_call.function.name} called with {tool_call.function.arguments} returned {result}"
         )
-        raw_action = json.loads(result.choices[0].message.content)
-        return Action(**raw_action)
+        return {
+            "role": "tool",
+            "tool_call_id": tool_call.id,
+            "name": tool_call.function.name,
+            "content": result,
+        }
 
-    def _perform_action(self, action: Action) -> Any:
-        if action.type == "Send Message":
-            message = Message(action["message"], author=self._identity)
-            self._conversation.append(message)
-            return message
-        elif action.type == "None":
-            pass
-        else:
-            raise ValueError(f"Unknown action type: {action.type}")
-
-    def __call__(self, message: Message) -> Optional[Message]:
+    def __call__(self, message: Message) -> List[Message]:
         if not message:
             raise ValueError("message cannot be None")
 
         self._conversation.append(message)
-        action = self._decide_action()
-        print(f"Action: {action}")
-        if len(self._conversation) > 20:
-            self._conversation = self._conversation[-20:]
-        return self._perform_action(action)
+
+        conversation_before = self._conversation[:]
+
+        # Conversation with LLM
+        chat_history = [
+            {
+                "role": "system",
+                "content": self._identity,
+            },
+            {
+                "role": "user",
+                "content": _USER_MESSAGE,
+            },
+        ]
+        ran_tools = False
+        while True:
+            response = (
+                completion(
+                    model=self._llm,
+                    temperature=0.9,
+                    messages=chat_history,
+                    tools=self._tools,
+                )
+                .choices[0]
+                .message
+            )
+            if not response.content:
+                break
+            tool_results = [
+                self._run_tool(tool_call) for tool_call in response.tool_calls
+            ]
+            if not tool_results:
+                if not ran_tools:
+                    raise ValueError(f"No tools were called\n\n{response.content}")
+                break
+            chat_history += [
+                response,
+                *tool_results,
+            ]
+            ran_tools = True
+
+        return self._conversation[len(conversation_before) :]

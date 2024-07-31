@@ -17,15 +17,16 @@ def friend():
 
 class TestFriend:
     def test__call__with_greeting_responds_with_nonempty_message(self, friend: Friend):
-        response = friend(Message(content="Hello, Proctor", author="Bob#0000"))
-        assert response is not None
-        assert isinstance(response.content, str)
-        assert response.content
+        responses = friend(Message(content="Hello, Proctor", author="Bob#0000"))
+        assert len(responses) == 1
+        assert isinstance(responses[0].content, str)
+        assert responses[0].content
 
     def test__call__multiple_times_remembers_previous_messages(self, friend: Friend):
         friend(Message(content="Hi, my favorite color is blue", author="Bob#0000"))
-        response = friend(
+        responses = friend(
             Message(content="What's my favorite color?", author="Bob#0000")
         )
-        assert response is not None
-        assert "blue" in response.content.lower()
+        assert len(responses) == 1
+        assert isinstance(responses[0].content, str)
+        assert "blue" in responses[0].content.lower()

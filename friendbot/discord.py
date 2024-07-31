@@ -87,14 +87,14 @@ class DiscordClient(discord.Client):
 
     async def _send_messages(self, channel: discord.TextChannel) -> None:
         async with channel.typing():
-            response = None
-            while response is None:
+            responses = None
+            while responses is None:
                 try:
                     last_message = await self._get_last_message(channel)
                     if not self._should_respond_to(last_message):
                         return
 
-                    response = self._friend(
+                    responses = self._friend(
                         Message(
                             content=last_message.content,
                             author=last_message.author.name,
@@ -106,7 +106,7 @@ class DiscordClient(discord.Client):
                     # Wait before trying again
                     await self._sleep(60.0, 3.0 * 60.0)
 
-            if response:
+            for response in responses:
                 await channel.send(response.content)
 
     async def _on_message(self, message: discord.Message) -> None:
