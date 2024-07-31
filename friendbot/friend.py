@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import os
 from typing import Any, Dict, List, Optional, Union
@@ -56,6 +57,7 @@ class Friend:
         self._conversation = []
         self._llm = llm or os.getenv("LLM")
         self._functions = {
+            "date_and_time": self._date_and_time,
             "send_message": self._send_message,
             "read_messages": self._read_messages,
         }
@@ -71,6 +73,11 @@ class Friend:
             return json.loads(input)
         except json.JSONDecodeError:
             return {"content": input}
+
+    def _date_and_time(self, input: Union[str, Dict[str, Any]]) -> str:
+        if self._parse_input(input):
+            return "Unexpected argument: {input}"
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z")
 
     def _read_messages(self, input: Any) -> str:
         if self._parse_input(input):
@@ -98,6 +105,15 @@ class Friend:
     @property
     def _tools(self) -> List[Dict[str, Any]]:
         return [
+            {
+                "name": "date_and_time",
+                "description": "Get the current date and time",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                },
+            },
             {
                 "name": "send_message",
                 "description": "Send a message in the current Discord channel",
