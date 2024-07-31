@@ -111,7 +111,6 @@ class Friend:
         result = completion(
             model=self._llm,
             temperature=0.9,
-            presence_penalty=1.5,
             messages=messages,
         )
         raw_action = json.loads(result.choices[0].message.content)
