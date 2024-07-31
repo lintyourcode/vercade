@@ -109,7 +109,7 @@ class Friend:
                 }
 
         completion = self.openai.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             temperature=0.9,
             presence_penalty=1.5,
             messages=messages,
