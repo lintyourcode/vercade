@@ -1,5 +1,6 @@
 import asyncio
 import random
+import re
 
 import discord
 import openai
@@ -9,7 +10,9 @@ from friendbot.friend import Friend, Message, MessageContext
 
 class DiscordClient(discord.Client):
     def __init__(self, *, friend: Friend = None, loop=None, **options) -> None:
-        super().__init__(loop=loop, intents=discord.Intents.default(), **options)
+        intents = discord.Intents.default()
+        intents.members = True
+        super().__init__(loop=loop, intents=intents, **options)
 
         if not friend:
             raise ValueError("please provide a Friend instance")
@@ -85,6 +88,32 @@ class DiscordClient(discord.Client):
 
         return False
 
+    def _format_message_for_friend(self, message: discord.Message) -> str:
+        content = message.content
+
+        # Replace Discord mentions with @username mentions
+        for mention in message.mentions:
+            content = content.replace(mention.mention, f"@{mention.name}")
+
+        return content
+
+    def _format_message_for_discord(
+        self, message: Message, channel: discord.TextChannel
+    ) -> str:
+        content = message.content
+
+        # Replace @username mentions with Discord mentions
+        all_users = {user.name: user for user in channel.guild.members}
+        mentions = re.findall(r"@(\w+)", content)
+        for username in mentions:
+            user = all_users.get(username)
+            if not user:
+                print(f"User {username} not found")
+
+            content = content.replace(f"@{username}", f"<@{user.id}>")
+
+        return content
+
     async def _send_messages(self, channel: discord.TextChannel) -> None:
         responses = None
         while responses is None:
@@ -99,7 +128,7 @@ class DiscordClient(discord.Client):
                         channel=channel.name,
                     ),
                     Message(
-                        content=last_message.content,
+                        content=self._format_message_for_friend(last_message),
                         author=last_message.author.name,
                     ),
                 )
@@ -120,7 +149,9 @@ class DiscordClient(discord.Client):
                         raise ValueError(f"Channel {channel_name} not found")
                     async with channel.typing():
                         await asyncio.sleep(len(response.content) / 20.0)
-                        await channel.send(response.content)
+                        await channel.send(
+                            self._format_message_for_discord(response, channel)
+                        )
 
     async def _on_message(self, message: discord.Message) -> None:
         channel = message.channel
