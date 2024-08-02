@@ -128,52 +128,61 @@ class Friend:
     def _tools(self) -> List[Dict[str, Any]]:
         return [
             {
-                "name": "date_and_time",
-                "description": "Get the current date and time",
-                "input_schema": {
-                    "type": "object",
-                    "properties": {},
-                    "required": [],
+                "type": "function",
+                "function": {
+                    "name": "date_and_time",
+                    "description": "Get the current date and time",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {},
+                        "required": [],
+                    },
                 },
             },
             {
-                "name": "send_message",
-                "description": "Send a message in the current Discord channel",
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "server": {
-                            "type": "string",
-                            "description": "The name of the Discord server to send the message in",
+                "type": "function",
+                "function": {
+                    "name": "send_message",
+                    "description": "Send a message in the current Discord channel. This is the only way to communicate with the user.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "server": {
+                                "type": "string",
+                                "description": "The name of the Discord server to send the message in",
+                            },
+                            "channel": {
+                                "type": "string",
+                                "description": "The name of the Discord channel to send the message in",
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "The markdown content of the message",
+                            },
                         },
-                        "channel": {
-                            "type": "string",
-                            "description": "The name of the Discord channel to send the message in",
-                        },
-                        "content": {
-                            "type": "string",
-                            "description": "The markdown content of the message",
-                        },
+                        "required": ["server", "channel", "content"],
                     },
-                    "required": ["server", "channel", "content"],
                 },
             },
             {
-                "name": "read_messages",
-                "description": "Read the 20 most recent messages from the current Discord channel",
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "server": {
-                            "type": "string",
-                            "description": "The name of the Discord server to read the messages from",
+                "type": "function",
+                "function": {
+                    "name": "read_messages",
+                    "description": "Read the 20 most recent messages from the current Discord channel",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "server": {
+                                "type": "string",
+                                "description": "The name of the Discord server to read the messages from",
+                            },
+                            "channel": {
+                                "type": "string",
+                                "description": "The name of the Discord channel to read the messages from",
+                            },
                         },
-                        "channel": {
-                            "type": "string",
-                            "description": "The name of the Discord channel to read the messages from",
-                        },
+                        "required": ["server", "channel"],
                     },
-                    "required": ["server", "channel"],
                 },
             },
         ]
