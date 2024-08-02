@@ -1,4 +1,6 @@
+import asyncio
 from collections import defaultdict
+from functools import partial
 from datetime import datetime
 import json
 import os
@@ -6,48 +8,11 @@ from typing import Any, Dict, List, Optional, Union
 
 from litellm import ChatCompletionMessageToolCall, completion, moderation
 
+from friendbot.message import Message, MessageContext
+from friendbot.social_media import SocialMedia
+
 
 _USER_MESSAGE_TEMPLATE = "You just received a message in the Discord server {server}'s channel #{channel}. You may use any tools available to you, if you would like to respond to the message."
-
-
-class MessageContext:
-    def __init__(self, server: str, channel: str) -> None:
-        self.server = server
-        self.channel = channel
-
-
-class Message:
-    def __init__(self, content: str, author: str = None) -> None:
-        if not content:
-            raise ValueError("content must be a non-empty string")
-
-        self._content = content
-        self._author = author
-
-    @property
-    def content(self) -> str:
-        return self._content
-
-    @property
-    def author(self) -> str:
-        return self._author
-
-    def __str__(self) -> str:
-        return f"{self.author}: {self.content}"
-
-
-class Action:
-    def __init__(self, type: str, **kwargs) -> None:
-        self._arguments = {**kwargs, "type": type}
-
-    def __getattr__(self, name: str) -> Any:
-        return self._arguments[name]
-
-    def __getitem__(self, name: str) -> Any:
-        return self._arguments[name]
-
-    def __str__(self) -> str:
-        return json.dumps(self._arguments)
 
 
 class Friend:
@@ -61,11 +26,6 @@ class Friend:
         self._identity = identity
         self._conversations = defaultdict(lambda: defaultdict(list))
         self._llm = llm or os.getenv("LLM")
-        self._functions = {
-            "date_and_time": self._date_and_time,
-            "send_message": self._send_message,
-            "read_messages": self._read_messages,
-        }
 
     def _format_author(self, author: str) -> str:
         if author == self._identity:
@@ -113,7 +73,7 @@ class Friend:
             ]
         )
 
-    def _send_message(self, input: str) -> str:
+    async def _send_message(self, input: str, social_media: SocialMedia) -> str:
         input = self._parse_input(input)
         content = input["content"]
         server = input["server"]
@@ -121,6 +81,12 @@ class Friend:
         if not content:
             return "content must be a non-empty string"
         message = Message(content=content, author=self._identity)
+        try:
+            await social_media.send(
+                MessageContext(social_media, server, channel), message
+            )
+        except Exception as e:
+            return f"Failed to send message: {e}"
         self._conversations[server][channel].append(message)
         return "Message sent"
 
@@ -187,11 +153,17 @@ class Friend:
             },
         ]
 
-    def _run_tool(self, tool_call: ChatCompletionMessageToolCall) -> None:
-        if tool_call.function.name not in self._functions:
+    async def _run_tool(
+        self, tool_call: ChatCompletionMessageToolCall, functions: Dict[str, Any]
+    ) -> None:
+        if tool_call.function.name not in functions:
             raise ValueError(f"Unknown tool: {tool_call.name}")
 
-        result = self._functions[tool_call.function.name](tool_call.function.arguments)
+        function = functions[tool_call.function.name]
+        if asyncio.iscoroutinefunction(function):
+            result = await function(tool_call.function.arguments)
+        else:
+            result = function(tool_call.function.arguments)
         print(
             f"Tool {tool_call.function.name} called with {tool_call.function.arguments} returned {result}"
         )
@@ -202,20 +174,28 @@ class Friend:
             "content": result,
         }
 
-    def __call__(self, context: MessageContext, message: Message) -> List[Message]:
+    async def __call__(self, context: MessageContext, message: Message) -> None:
+        """
+        Perform action(s) in response to a message.
+
+        Args:
+            context: The context where the message was received.
+            message: The message received.
+        """
+
         if not message:
             raise ValueError("message cannot be None")
 
+        functions = {
+            "date_and_time": self._date_and_time,
+            "send_message": partial(
+                self._send_message, social_media=context.social_media
+            ),
+            "read_messages": self._read_messages,
+        }
+
         conversation = self._conversations[context.server][context.channel]
         conversation.append(message)
-
-        conversations_before = {
-            server: {
-                channel: conversation[:]
-                for channel, conversation in self._conversations[server].items()
-            }
-            for server in self._conversations
-        }
 
         # Conversation with LLM
         chat_history = [
@@ -247,29 +227,14 @@ class Friend:
                 if not ran_tools:
                     raise ValueError(f"No tools were called\n\n{response.content}")
                 break
-            tool_results = [
-                self._run_tool(tool_call) for tool_call in response.tool_calls
-            ]
+            tool_results = await asyncio.gather(
+                *[
+                    self._run_tool(tool_call, functions)
+                    for tool_call in response.tool_calls
+                ]
+            )
             chat_history += [
                 response,
                 *tool_results,
             ]
             ran_tools = True
-
-        diffs = {}
-        for server, channels in self._conversations.items():
-            for channel, conversation in channels.items():
-                if server not in diffs:
-                    diffs[server] = {}
-                if channel not in diffs[server]:
-                    diffs[server][channel] = []
-                if (
-                    server in conversations_before
-                    and channel in conversations_before[server]
-                ):
-                    diffs[server][channel] = conversation[
-                        len(conversations_before[server][channel]) :
-                    ]
-                else:
-                    diffs[server][channel] = conversation
-        return diffs

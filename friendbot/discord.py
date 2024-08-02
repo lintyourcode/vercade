@@ -5,14 +5,17 @@ import re
 import discord
 import openai
 
-from friendbot.friend import Friend, Message, MessageContext
+from friendbot.friend import Friend
+from friendbot.message import Message, MessageContext
+from friendbot.social_media import SocialMedia
 
 
-class DiscordClient(discord.Client):
+class DiscordClient(discord.Client, SocialMedia):
     def __init__(self, *, friend: Friend = None, loop=None, **options) -> None:
         intents = discord.Intents.default()
         intents.members = True
-        super().__init__(loop=loop, intents=intents, **options)
+        discord.Client.__init__(self, loop=loop, intents=intents, **options)
+        SocialMedia.__init__(self)
 
         if not friend:
             raise ValueError("please provide a Friend instance")
@@ -69,7 +72,7 @@ class DiscordClient(discord.Client):
                 continue
 
             await self._sleep(-45.0, 60.0)
-            await self._send_messages(channel)
+            await self._respond_to_messages(channel)
 
     async def on_ready(self) -> None:
         print(f"Logged in as {self.user}")
@@ -114,7 +117,7 @@ class DiscordClient(discord.Client):
 
         return content
 
-    async def _send_messages(self, channel: discord.TextChannel) -> None:
+    async def _respond_to_messages(self, channel: discord.TextChannel) -> None:
         responses = None
         while responses is None:
             try:
@@ -122,8 +125,9 @@ class DiscordClient(discord.Client):
                 if not self._should_respond_to(last_message):
                     return
 
-                responses = self._friend(
+                responses = await self._friend(
                     MessageContext(
+                        social_media=self,
                         server=channel.guild.name,
                         channel=channel.name,
                     ),
@@ -157,12 +161,12 @@ class DiscordClient(discord.Client):
         channel = message.channel
 
         # Send a few messages
-        await self._send_messages(channel)
+        await self._respond_to_messages(channel)
 
         # Sometimes send a message in an hour or so
         if random.randint(0, 1) == 0:
             await self._sleep(60.0, 5.0 * 60.0)
-            await self._send_messages(channel)
+            await self._respond_to_messages(channel)
 
         # Always check and respond to existing messages after we're done with
         # everyth8ing else
@@ -180,3 +184,14 @@ class DiscordClient(discord.Client):
             self._respond_task.cancel()
 
         self._respond_task = asyncio.create_task(self._on_message(message))
+
+    async def send(self, context: MessageContext, message: Message) -> None:
+        guild = discord.utils.get(self.guilds, name=context.server)
+        if not guild:
+            raise ValueError(f"Guild {context.server} not found")
+        channel = discord.utils.get(guild.text_channels, name=context.channel)
+        if not channel:
+            raise ValueError(f"Channel {context.channel} not found")
+        async with channel.typing():
+            await asyncio.sleep(len(message.content) / 20.0)
+        await channel.send(self._format_message_for_discord(message, channel))

@@ -15,7 +15,11 @@ litellm = "^1.42.5"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.2"
+pytest-asyncio = "^0.23.8"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
