@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Union
 from litellm import ChatCompletionMessageToolCall, completion, moderation
 
 
-_USER_MESSAGE_TEMPLATE = "You just received a message in the Discord server {server}'s channel #{channel}. How would you like to respond?"
+_USER_MESSAGE_TEMPLATE = "You just received a message in the Discord server {server}'s channel #{channel}. Briefly describe what you think about the message. You may also use any tools available to you."
 
 
 class MessageContext:
@@ -230,6 +230,7 @@ class Friend:
             )
             if not response.content:
                 break
+            print(f"Thought: {response.content}")
             tool_results = [
                 self._run_tool(tool_call) for tool_call in response.tool_calls
             ]
