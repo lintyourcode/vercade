@@ -156,9 +156,6 @@ class DiscordClient(discord.Client):
     async def _on_message(self, message: discord.Message) -> None:
         channel = message.channel
 
-        # Initial delay
-        await self._sleep(-75.0, 30.0)
-
         # Send a few messages
         await self._send_messages(channel)
 
