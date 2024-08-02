@@ -84,10 +84,15 @@ class Friend:
             return "Unexpected argument: {input}"
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z")
 
+    def _clean_channel(self, channel: str) -> str:
+        if channel.startswith("#"):
+            channel = channel[1:]
+        return channel
+
     def _read_messages(self, input: Any) -> str:
         input = self._parse_input(input)
         server = input["server"]
-        channel = input["channel"]
+        channel = self._clean_channel(input["channel"])
         if (
             server not in self._conversations
             or channel not in self._conversations[server]
@@ -112,7 +117,7 @@ class Friend:
         input = self._parse_input(input)
         content = input["content"]
         server = input["server"]
-        channel = input["channel"]
+        channel = self._clean_channel(input["channel"])
         if not content:
             return "content must be a non-empty string"
         message = Message(content=content, author=self._identity)
