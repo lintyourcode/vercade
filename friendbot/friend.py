@@ -233,16 +233,14 @@ class Friend:
                 .choices[0]
                 .message
             )
-            if not response.content:
-                break
             print(f"Thought: {response.content}")
-            tool_results = [
-                self._run_tool(tool_call) for tool_call in response.tool_calls
-            ]
-            if not tool_results:
+            if not response.tool_calls:
                 if not ran_tools:
                     raise ValueError(f"No tools were called\n\n{response.content}")
                 break
+            tool_results = [
+                self._run_tool(tool_call) for tool_call in response.tool_calls
+            ]
             chat_history += [
                 response,
                 *tool_results,
