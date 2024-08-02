@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Union
 from litellm import ChatCompletionMessageToolCall, completion, moderation
 
 
-_USER_MESSAGE_TEMPLATE = "You just received a message in the Discord server {server}'s channel #{channel}. Briefly describe what you think about the message. You may also use any tools available to you."
+_USER_MESSAGE_TEMPLATE = "You just received a message in the Discord server {server}'s channel #{channel}. You may use any tools available to you, if you would like to respond to the message."
 
 
 class MessageContext:
