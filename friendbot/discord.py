@@ -1,6 +1,7 @@
 import asyncio
 import random
 import re
+from typing import Tuple
 
 import discord
 import openai
@@ -185,13 +186,42 @@ class DiscordClient(discord.Client, SocialMedia):
 
         self._respond_task = asyncio.create_task(self._on_message(message))
 
-    async def send(self, context: MessageContext, message: Message) -> None:
+    async def _get_guild_and_channel(
+        self, context: MessageContext
+    ) -> Tuple[discord.Guild, discord.TextChannel]:
         guild = discord.utils.get(self.guilds, name=context.server)
         if not guild:
             raise ValueError(f"Guild {context.server} not found")
         channel = discord.utils.get(guild.text_channels, name=context.channel)
         if not channel:
             raise ValueError(f"Channel {context.channel} not found")
+        return guild, channel
+
+    async def _get_message(
+        self,
+        guild: discord.Guild,
+        channel: discord.TextChannel,
+        message: Message,
+        fetch_limit: int = 100,
+    ) -> discord.Message:
+        async for message in channel.history(limit=fetch_limit):
+            if message.content == message.content:
+                return message
+
+    async def send(self, context: MessageContext, message: Message) -> None:
+        guild, channel = await self._get_guild_and_channel(context)
         async with channel.typing():
             await asyncio.sleep(len(message.content) / 20.0)
         await channel.send(self._format_message_for_discord(message, channel))
+
+    async def react(
+        self, context: MessageContext, message: Message, emoji: str
+    ) -> None:
+        """
+        React to a message with an emoji.
+        """
+
+        guild, channel = await self._get_guild_and_channel(context)
+        discord_message = await self._get_message(guild, channel, message)
+        discord_emoji = discord.utils.get(guild.emojis, name=emoji) or emoji
+        await discord_message.add_reaction(discord_emoji)

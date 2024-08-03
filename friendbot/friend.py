@@ -90,6 +90,24 @@ class Friend:
         self._conversations[server][channel].append(message)
         return "Message sent"
 
+    async def _react(self, input: str, social_media: SocialMedia) -> str:
+        input = self._parse_input(input)
+        server = input["server"]
+        channel = self._clean_channel(input["channel"])
+        message = Message(
+            content=input["message"]["content"], author=input["message"]["author"]
+        )
+        emoji = input["emoji"]
+        if not emoji:
+            return "emoji must be a non-empty string"
+        try:
+            await social_media.react(
+                MessageContext(social_media, server, channel), message, emoji
+            )
+        except Exception as e:
+            return f"Failed to react to message: {e}"
+        return "Reaction added"
+
     @property
     def _tools(self) -> List[Dict[str, Any]]:
         return [
@@ -127,6 +145,45 @@ class Friend:
                             },
                         },
                         "required": ["server", "channel", "content"],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "react",
+                    "description": "React to a Discord message with an emoji",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "server": {
+                                "type": "string",
+                                "description": "The name of the Discord server to react in",
+                            },
+                            "channel": {
+                                "type": "string",
+                                "description": "The name of the Discord channel to react in",
+                            },
+                            "message": {
+                                "type": "object",
+                                "properties": {
+                                    "content": {
+                                        "type": "string",
+                                        "description": "The content of the message to react to",
+                                    },
+                                    "author": {
+                                        "type": "string",
+                                        "description": "The author of the message to react to",
+                                    },
+                                },
+                                "required": ["content", "author"],
+                            },
+                            "emoji": {
+                                "type": "string",
+                                "description": "The emoji to react with",
+                            },
+                        },
+                        "required": ["server", "channel", "message", "emoji"],
                     },
                 },
             },
@@ -191,6 +248,7 @@ class Friend:
             "send_message": partial(
                 self._send_message, social_media=context.social_media
             ),
+            "react": partial(self._react, social_media=context.social_media),
             "read_messages": self._read_messages,
         }
 
