@@ -16,7 +16,9 @@ _USER_MESSAGE_TEMPLATE = "You just received a message in the Discord server {ser
 
 
 class Friend:
-    def __init__(self, identity: str, llm: Optional[str] = None) -> None:
+    def __init__(
+        self, identity: str, moderate_messages: bool = True, llm: Optional[str] = None
+    ) -> None:
         if not identity:
             raise ValueError("identity must be a non-empty string")
 
@@ -25,6 +27,7 @@ class Friend:
 
         self._identity = identity
         self._conversations = defaultdict(lambda: defaultdict(list))
+        self._moderate_messages = moderate_messages
         self._llm = llm or os.getenv("LLM")
 
     def _format_author(self, author: str) -> str:
@@ -69,7 +72,8 @@ class Friend:
                     "content": message.content,
                 }
                 for message in conversation
-                if not moderation(input=message.content).results[0].flagged
+                if not self._moderate_messages
+                or not moderation(input=message.content).results[0].flagged
             ]
         )
 

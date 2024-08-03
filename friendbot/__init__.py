@@ -17,6 +17,9 @@ def main():
         raise ValueError("DISCORD_TOKEN environment variable must be set")
     discord_token = os.getenv("DISCORD_TOKEN")
 
-    friend = Friend(identity=identity)
+    friend = Friend(
+        identity=identity,
+        moderate_messages=os.getenv("FRIENDBOT_MODERATE_MESSAGES"),
+    )
     proctor = DiscordClient(friend=friend)
     proctor.run(discord_token)
