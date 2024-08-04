@@ -1,6 +1,8 @@
 import os
 
 import dotenv
+from pinecone.grpc import PineconeGRPC as Pinecone
+from pinecone import ServerlessSpec
 
 from friendbot.discord import DiscordClient
 from friendbot.friend import Friend
@@ -17,9 +19,28 @@ def main():
         raise ValueError("DISCORD_TOKEN environment variable must be set")
     discord_token = os.getenv("DISCORD_TOKEN")
 
+    if not os.getenv("PINECONE_API_KEY"):
+        raise ValueError("PINECONE_API_KEY environment variable must be set")
+    if not os.getenv("PINECONE_INDEX_NAME"):
+        raise ValueError("PINECONE_INDEX_NAME environment variable must be set")
+    index_name = os.getenv("PINECONE_INDEX_NAME")
+
+    pinecone = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
+    if index_name not in [index.name for index in pinecone.list_indexes()]:
+        pinecone.create_index(
+            name=index_name,
+            dimension=1536,
+            metric="cosine",
+            spec=ServerlessSpec(
+                cloud=os.getenv("PINECONE_CLOUD", "aws"),
+                region=os.getenv("PINECONE_REGION", "us-west-2"),
+            ),
+        )
     friend = Friend(
         identity=identity,
         moderate_messages=os.getenv("FRIENDBOT_MODERATE_MESSAGES"),
+        pinecone_index=pinecone.Index(index_name),
+        embedding_model=os.getenv("EMBEDDING_MODEL", "text-embedding-3-small"),
     )
     proctor = DiscordClient(friend=friend)
     proctor.run(discord_token)

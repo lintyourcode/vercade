@@ -3,19 +3,26 @@ from functools import partial
 from datetime import datetime
 import json
 import os
+import re
 from typing import Any, Dict, List, Optional, Union
 
-from litellm import ChatCompletionMessageToolCall, completion, moderation
+from litellm import ChatCompletionMessageToolCall, completion, embedding, moderation
+import pinecone
 
 from friendbot.social_media import Message, MessageContext, SocialMedia
 
 
-_USER_MESSAGE_TEMPLATE = "You just received a message in the Discord server {server}'s channel #{channel}. You may use any tools available to you, if you would like to respond to the message."
+_USER_MESSAGE_TEMPLATE = "You just received a message in the Discord server {server}'s channel #{channel}. You may use any tools available to you, or do nothing at all."
 
 
 class Friend:
     def __init__(
-        self, identity: str, moderate_messages: bool = True, llm: Optional[str] = None
+        self,
+        identity: str,
+        pinecone_index: pinecone.Index,
+        moderate_messages: bool = True,
+        llm: Optional[str] = None,
+        embedding_model: Optional[str] = None,
     ) -> None:
         if not identity:
             raise ValueError("identity must be a non-empty string")
@@ -24,8 +31,10 @@ class Friend:
             raise ValueError("OPENAI_API_KEY environment variable must be set")
 
         self._identity = identity
+        self._pinecone_index = pinecone_index
         self._moderate_messages = moderate_messages
         self._llm = llm or os.getenv("LLM")
+        self._embedding_model = embedding_model or os.getenv("EMBEDDING_MODEL")
 
     def _format_author(self, author: str) -> str:
         if author == self._identity:
@@ -114,6 +123,44 @@ class Friend:
         except Exception as e:
             return f"Failed to react to message: {e}"
         return "Reaction added"
+
+    def _save_memory(self, input: str) -> str:
+        input = self._parse_input(input)
+        memory = input["content"]
+        if not memory:
+            return "memory must be a non-empty string"
+        id = re.sub(r"[^0-9a-zA-Z]+", "-", memory).replace("-", "").lower()
+        metadata = {
+            "content": memory,
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z"),
+        }
+        vector = (
+            embedding(model=self._embedding_model, input=memory)
+            .get("data")[0]
+            .get("embedding")
+        )
+        self._pinecone_index.upsert(vectors=[(id, vector, metadata)])
+        return "Memory saved"
+
+    def _get_memories(self, input: str) -> str:
+        input = self._parse_input(input)
+        query = input.get("query", "")
+        if not query:
+            return "query must be a non-empty string"
+        top_k = input.get("top_k", 10)
+        vector = (
+            embedding(model=self._embedding_model, input=query)
+            .get("data")[0]
+            .get("embedding")
+        )
+        return {
+            "memories": [
+                memory.metadata
+                for memory in self._pinecone_index.query(vector=vector, top_k=top_k)[
+                    "matches"
+                ]
+            ]
+        }
 
     @property
     def _tools(self) -> List[Dict[str, Any]]:
@@ -220,6 +267,45 @@ class Friend:
                     },
                 },
             },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_memories",
+                    "description": "Search for relevant memories in your vector database. Use this tool to fetch all memories about any topic in the current conversation.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "The word, phrase, or sentence to search for, based on semantic similarity",
+                            },
+                            "top_k": {
+                                "type": "integer",
+                                "description": "The max number of memories to return",
+                                "default": 10,
+                            },
+                        },
+                        "required": ["query"],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "save_memory",
+                    "description": "Save a memory to your vector database. Use this tool to remember every important detail you can learn from the current conversation.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "content": {
+                                "type": "string",
+                                "description": "One or more sentences of information to save, including any relevant context.",
+                            }
+                        },
+                        "required": ["content"],
+                    },
+                },
+            },
         ]
 
     async def _run_tool(
@@ -263,6 +349,8 @@ class Friend:
             "read_messages": partial(
                 self._read_messages, social_media=context.social_media
             ),
+            "get_memories": self._get_memories,
+            "save_memory": self._save_memory,
         }
 
         # Conversation with LLM
