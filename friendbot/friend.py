@@ -198,7 +198,7 @@ class Friend:
                 "type": "function",
                 "function": {
                     "name": "read_messages",
-                    "description": "Read the most recent messages from the current Discord channel",
+                    "description": "Read the most recent messages from the current Discord channel. Useful for getting context for the current conversation.",
                     "parameters": {
                         "type": "object",
                         "properties": {
