@@ -68,6 +68,13 @@ class Friend:
                 {
                     "author": self._format_author(message.author),
                     "content": message.content,
+                    "reactions": [
+                        {
+                            "emoji": reaction.emoji,
+                            "users": reaction.users,
+                        }
+                        for reaction in message.reactions
+                    ],
                 }
                 for message in conversation
                 if not self._moderate_messages

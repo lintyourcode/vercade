@@ -2,6 +2,12 @@ from __future__ import annotations
 from typing import Any, List
 
 
+class Reaction:
+    def __init__(self, emoji: str, users: List[str]) -> None:
+        self.emoji = emoji
+        self.users = users
+
+
 class MessageContext:
     def __init__(self, social_media: SocialMedia, server: str, channel: str) -> None:
         self.social_media = social_media
@@ -10,12 +16,15 @@ class MessageContext:
 
 
 class Message:
-    def __init__(self, content: str, author: str = None) -> None:
+    def __init__(
+        self, content: str, author: str = None, reactions: List[Reaction] = []
+    ) -> None:
         if not content:
             raise ValueError("content must be a non-empty string")
 
         self._content = content
         self._author = author
+        self._reactions = reactions
 
     @property
     def content(self) -> str:
@@ -24,6 +33,10 @@ class Message:
     @property
     def author(self) -> str:
         return self._author
+
+    @property
+    def reactions(self) -> List[Reaction]:
+        return self._reactions
 
     def __str__(self) -> str:
         return f"{self.author}: {self.content}"

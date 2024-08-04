@@ -212,6 +212,13 @@ class DiscordClient(discord.Client, SocialMedia):
                 Message(
                     content=self._format_message_for_friend(message),
                     author=message.author.name,
+                    reactions=[
+                        Reaction(
+                            emoji=reaction.emoji,
+                            users=[user.name async for user in reaction.users()],
+                        )
+                        for reaction in message.reactions
+                    ],
                 )
                 async for message in channel.history(limit=limit)
             ]
