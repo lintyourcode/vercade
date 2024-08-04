@@ -224,6 +224,9 @@ class Friend:
             # TODO: Update `tool_call.name` to `tool_call.function.name`
             raise ValueError(f"Unknown tool: {tool_call.name}")
 
+        print(
+            f"Calling tool {tool_call.function.name} with {tool_call.function.arguments}"
+        )
         function = functions[tool_call.function.name]
         if asyncio.iscoroutinefunction(function):
             result = await function(tool_call.function.arguments)
