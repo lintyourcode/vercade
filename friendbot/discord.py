@@ -1,7 +1,7 @@
 import asyncio
 import random
 import re
-from typing import Tuple
+from typing import List, Tuple
 
 import discord
 import openai
@@ -131,11 +131,7 @@ class DiscordClient(discord.Client, SocialMedia):
                         social_media=self,
                         server=channel.guild.name,
                         channel=channel.name,
-                    ),
-                    Message(
-                        content=self._format_message_for_friend(last_message),
-                        author=last_message.author.name,
-                    ),
+                    )
                 )
 
             except openai.OpenAIError as e:
@@ -207,6 +203,18 @@ class DiscordClient(discord.Client, SocialMedia):
         async for message in channel.history(limit=fetch_limit):
             if message.content == message.content:
                 return message
+
+    async def messages(
+        self, context: MessageContext, limit: int = 100
+    ) -> List[Message]:
+        guild, channel = await self._get_guild_and_channel(context)
+        return [
+            Message(
+                content=self._format_message_for_friend(message),
+                author=message.author.name,
+            )
+            async for message in channel.history(limit=limit)
+        ]
 
     async def send(self, context: MessageContext, message: Message) -> None:
         guild, channel = await self._get_guild_and_channel(context)

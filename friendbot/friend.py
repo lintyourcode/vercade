@@ -26,7 +26,6 @@ class Friend:
             raise ValueError("OPENAI_API_KEY environment variable must be set")
 
         self._identity = identity
-        self._conversations = defaultdict(lambda: defaultdict(list))
         self._moderate_messages = moderate_messages
         self._llm = llm or os.getenv("LLM")
 
@@ -52,19 +51,19 @@ class Friend:
             channel = channel[1:]
         return channel
 
-    def _read_messages(self, input: Any) -> str:
+    async def _read_messages(self, input: Any, social_media: SocialMedia) -> str:
         input = self._parse_input(input)
         server = input["server"]
         channel = self._clean_channel(input["channel"])
-        if (
-            server not in self._conversations
-            or channel not in self._conversations[server]
-        ):
-            return "No conversation found"
-        conversation = self._conversations[server][channel]
-        if len(conversation) > 20:
-            conversation = conversation[-20:]
-            self._conversations[server][channel] = conversation
+        try:
+            limit = int(input.get("limit", 20))
+        except ValueError:
+            return "limit must be an integer"
+        context = MessageContext(social_media, server, channel)
+        try:
+            conversation = await social_media.messages(context, limit=limit)
+        except Exception as e:
+            return f"Failed to read messages: {e}"
         return json.dumps(
             [
                 {
@@ -91,7 +90,6 @@ class Friend:
             )
         except Exception as e:
             return f"Failed to send message: {e}"
-        self._conversations[server][channel].append(message)
         return "Message sent"
 
     async def _react(self, input: str, social_media: SocialMedia) -> str:
@@ -195,7 +193,7 @@ class Friend:
                 "type": "function",
                 "function": {
                     "name": "read_messages",
-                    "description": "Read the 20 most recent messages from the current Discord channel",
+                    "description": "Read the most recent messages from the current Discord channel",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -206,6 +204,11 @@ class Friend:
                             "channel": {
                                 "type": "string",
                                 "description": "The name of the Discord channel to read the messages from",
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "description": "The number of messages to read",
+                                "default": 20,
                             },
                         },
                         "required": ["server", "channel"],
@@ -218,6 +221,7 @@ class Friend:
         self, tool_call: ChatCompletionMessageToolCall, functions: Dict[str, Any]
     ) -> None:
         if tool_call.function.name not in functions:
+            # TODO: Update `tool_call.name` to `tool_call.function.name`
             raise ValueError(f"Unknown tool: {tool_call.name}")
 
         function = functions[tool_call.function.name]
@@ -235,17 +239,13 @@ class Friend:
             "content": result,
         }
 
-    async def __call__(self, context: MessageContext, message: Message) -> None:
+    async def __call__(self, context: MessageContext) -> None:
         """
         Perform action(s) in response to a message.
 
         Args:
             context: The context where the message was received.
-            message: The message received.
         """
-
-        if not message:
-            raise ValueError("message cannot be None")
 
         functions = {
             "date_and_time": self._date_and_time,
@@ -253,11 +253,10 @@ class Friend:
                 self._send_message, social_media=context.social_media
             ),
             "react": partial(self._react, social_media=context.social_media),
-            "read_messages": self._read_messages,
+            "read_messages": partial(
+                self._read_messages, social_media=context.social_media
+            ),
         }
-
-        conversation = self._conversations[context.server][context.channel]
-        conversation.append(message)
 
         # Conversation with LLM
         chat_history = [
