@@ -7,8 +7,7 @@ import discord
 import openai
 
 from friendbot.friend import Friend
-from friendbot.message import Message, MessageContext
-from friendbot.social_media import SocialMedia
+from friendbot.social_media import Message, MessageContext, SocialMedia
 
 
 class DiscordClient(discord.Client, SocialMedia):

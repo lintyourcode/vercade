@@ -8,8 +8,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from litellm import ChatCompletionMessageToolCall, completion, moderation
 
-from friendbot.message import Message, MessageContext
-from friendbot.social_media import SocialMedia
+from friendbot.social_media import Message, MessageContext, SocialMedia
 
 
 _USER_MESSAGE_TEMPLATE = "You just received a message in the Discord server {server}'s channel #{channel}. You may use any tools available to you, if you would like to respond to the message."

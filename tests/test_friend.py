@@ -5,8 +5,7 @@ import pytest
 from unittest.mock import AsyncMock, Mock, ANY
 
 from friendbot.friend import Friend
-from friendbot.message import Message, MessageContext
-from friendbot.social_media import SocialMedia
+from friendbot.social_media import Message, MessageContext, SocialMedia
 
 
 MODELS = ["gpt-4o-mini", "claude-3-5-sonnet-20240620"]
