@@ -208,13 +208,15 @@ class DiscordClient(discord.Client, SocialMedia):
         self, context: MessageContext, limit: int = 100
     ) -> List[Message]:
         guild, channel = await self._get_guild_and_channel(context)
-        return [
-            Message(
-                content=self._format_message_for_friend(message),
-                author=message.author.name,
-            )
-            async for message in channel.history(limit=limit)
-        ]
+        return reversed(
+            [
+                Message(
+                    content=self._format_message_for_friend(message),
+                    author=message.author.name,
+                )
+                async for message in channel.history(limit=limit)
+            ]
+        )
 
     async def send(self, context: MessageContext, message: Message) -> None:
         guild, channel = await self._get_guild_and_channel(context)
