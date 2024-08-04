@@ -271,7 +271,7 @@ class Friend:
                 "type": "function",
                 "function": {
                     "name": "get_memories",
-                    "description": "Search for relevant memories in your vector database. Use this tool to fetch all memories about any topic in the current conversation.",
+                    "description": "Search for relevant memories in your vector database. Use this tool to fetch all memories about each topic in the current conversation.",
                     "parameters": {
                         "type": "object",
                         "properties": {
