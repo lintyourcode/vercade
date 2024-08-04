@@ -295,13 +295,13 @@ class Friend:
                 "type": "function",
                 "function": {
                     "name": "save_memory",
-                    "description": "Save a memory to your vector database. Use this tool to remember every important detail you can learn from the current conversation.",
+                    "description": "Save a specific detail to your vector database. Use this tool to remember every important detail you can learn from the current conversation.",
                     "parameters": {
                         "type": "object",
                         "properties": {
                             "content": {
                                 "type": "string",
-                                "description": "One or more sentences of information to save, including any relevant context.",
+                                "description": "One or more sentences describing a specific detail to save, including any relevant context.",
                             }
                         },
                         "required": ["content"],
