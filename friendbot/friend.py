@@ -93,8 +93,13 @@ class Friend:
     async def _send_message(self, input: str, social_media: SocialMedia) -> str:
         input = self._parse_input(input)
         content = input["content"]
-        server = input["server"]
-        channel = self._clean_channel(input["channel"])
+        server = input.get("server")
+        if not server:
+            return "server must be a non-empty string"
+        channel = input.get("channel")
+        if not channel:
+            return "channel must be a non-empty string"
+        channel = self._clean_channel(channel)
         if not content:
             return "content must be a non-empty string"
         message = Message(content=content, author=self._identity)
