@@ -132,4 +132,4 @@ class TestFriend:
         message = Message(content="Hello, Proctor. I'm Bob.", author="Bob#0000")
         social_media.messages = AsyncMock(return_value=[message])
         await friend(context)
-        pinecone_index.query.assert_called_with(vector=ANY, top_k=ANY)
+        pinecone_index.query.assert_called_with(vector=ANY, top_k=ANY, filter=ANY)
