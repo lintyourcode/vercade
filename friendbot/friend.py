@@ -144,7 +144,10 @@ class Friend:
             .get("data")[0]
             .get("embedding")
         )
-        if self._pinecone_index.query(vector=vector, top_k=1)["matches"]:
+
+        if self._pinecone_index.query(
+            vector=vector, top_k=1, filter=lambda entry: entry["score"] > 0.95
+        )["matches"]:
             return "Memory already exists"
         self._pinecone_index.upsert(vectors=[(id, vector, metadata)])
         return "Memory saved"
