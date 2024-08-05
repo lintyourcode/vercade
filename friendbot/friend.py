@@ -163,9 +163,9 @@ class Friend:
         return {
             "memories": [
                 memory.metadata
-                for memory in self._pinecone_index.query(vector=vector, top_k=top_k)[
-                    "matches"
-                ]
+                for memory in self._pinecone_index.query(
+                    vector=vector, top_k=top_k, include_metadata=True
+                )["matches"]
             ]
         }
 
