@@ -191,14 +191,16 @@ class Friend:
             .get("data")[0]
             .get("embedding")
         )
-        return {
-            "memories": [
-                memory.metadata
-                for memory in self._pinecone_index.query(
-                    vector=vector, top_k=top_k, include_metadata=True
-                )["matches"]
-            ]
-        }
+        return json.dumps(
+            {
+                "memories": [
+                    memory.metadata
+                    for memory in self._pinecone_index.query(
+                        vector=vector, top_k=top_k, include_metadata=True
+                    )["matches"]
+                ]
+            }
+        )
 
     @property
     def _tools(self) -> List[Dict[str, Any]]:
