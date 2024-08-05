@@ -22,6 +22,7 @@ class Friend:
         pinecone_index: pinecone.Index,
         moderate_messages: bool = True,
         llm: Optional[str] = None,
+        web_llm: Optional[str] = None,
         embedding_model: Optional[str] = None,
     ) -> None:
         if not identity:
@@ -35,6 +36,7 @@ class Friend:
         self._moderate_messages = moderate_messages
         self._llm = llm or os.getenv("LLM")
         self._embedding_model = embedding_model or os.getenv("EMBEDDING_MODEL")
+        self._web_llm = web_llm or os.getenv("FRIENDBOT_WEB_LLM")
 
     def _format_author(self, author: str) -> str:
         if author == self._identity:
@@ -52,6 +54,32 @@ class Friend:
         if self._parse_input(input):
             return "Unexpected argument: {input}"
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z")
+
+    def _search_web(self, input: str) -> str:
+        input = self._parse_input(input)
+        query = input.get("query")
+        if not query:
+            return "query must be a non-empty string"
+        return (
+            completion(
+                model=self._web_llm,
+                api_key=os.getenv("PERPLEXITY_API_KEY"),
+                api_base="https://api.perplexity.ai",
+                temperature=0.1,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a helpful assistant that searches the web for information.",
+                    },
+                    {
+                        "role": "user",
+                        "content": query,
+                    },
+                ],
+            )
+            .choices[0]
+            .message.content
+        )
 
     def _clean_channel(self, channel: str) -> str:
         if channel.startswith("#"):
@@ -184,6 +212,18 @@ class Friend:
                         "type": "object",
                         "properties": {},
                         "required": [],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "search_web",
+                    "description": "Search the web for information. Useful for finding up-to-date context or niche information.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {"query": {"type": "string"}},
+                        "required": ["query"],
                     },
                 },
             },
@@ -352,6 +392,7 @@ class Friend:
 
         functions = {
             "date_and_time": self._date_and_time,
+            "search_web": self._search_web,
             "send_message": partial(
                 self._send_message, social_media=context.social_media
             ),
