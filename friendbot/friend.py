@@ -278,7 +278,7 @@ class Friend:
                 "type": "function",
                 "function": {
                     "name": "get_memories",
-                    "description": "Search for relevant memories in your vector database. Use this tool to fetch all memories about each topic in the current conversation.",
+                    "description": "Search your memory vector database for memories related to a piece of text. For each person, topic, or idea in every Discord message you receive, search for any memories you've saved about them.",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -300,7 +300,7 @@ class Friend:
                 "type": "function",
                 "function": {
                     "name": "save_memory",
-                    "description": "Save a specific detail to your vector database. Use this tool to remember every important detail you can learn from the current conversation.",
+                    "description": "Save a specific detail to your memory vector database. Make sure to save every detail you notice about other people and your interactions with them, along with anything you say about yourself.",
                     "parameters": {
                         "type": "object",
                         "properties": {
