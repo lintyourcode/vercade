@@ -6,7 +6,7 @@ from friendbot.friend import Friend
 from friendbot.social_media import Message, MessageContext, SocialMedia
 
 
-MODELS = ["gpt-4o-mini", "claude-3-5-sonnet-20240620"]
+MODELS = ["gpt-4o", "claude-3-5-sonnet-20240620"]
 
 
 dotenv.load_dotenv()
