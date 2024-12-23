@@ -104,6 +104,7 @@ class Friend:
                 {
                     "author": self._format_author(message.author),
                     "content": message.content,
+                    "embeds": [embed.url for embed in message.embeds],
                     "reactions": [
                         {
                             "emoji": reaction.emoji,

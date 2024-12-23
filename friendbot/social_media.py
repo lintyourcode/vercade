@@ -8,6 +8,11 @@ class Reaction:
         self.users = users
 
 
+class Embed:
+    def __init__(self, url: str) -> None:
+        self.url = url
+
+
 class MessageContext:
     def __init__(self, social_media: SocialMedia, server: str, channel: str) -> None:
         self.social_media = social_media
@@ -17,13 +22,15 @@ class MessageContext:
 
 class Message:
     def __init__(
-        self, content: str, author: str = None, reactions: List[Reaction] = []
+        self,
+        content: str,
+        author: str = None,
+        embeds: List[Embed] = [],
+        reactions: List[Reaction] = [],
     ) -> None:
-        if not content:
-            raise ValueError("content must be a non-empty string")
-
         self._content = content
         self._author = author
+        self._embeds = embeds
         self._reactions = reactions
 
     @property
@@ -37,6 +44,10 @@ class Message:
     @property
     def reactions(self) -> List[Reaction]:
         return self._reactions
+
+    @property
+    def embeds(self) -> List[Embed]:
+        return self._embeds
 
     def __str__(self) -> str:
         return f"{self.author}: {self.content}"

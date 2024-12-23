@@ -7,7 +7,7 @@ import discord
 import openai
 
 from friendbot.friend import Friend
-from friendbot.social_media import Message, MessageContext, Reaction, SocialMedia
+from friendbot.social_media import Embed, Message, MessageContext, Reaction, SocialMedia
 
 
 class DiscordClient(discord.Client, SocialMedia):
@@ -219,6 +219,12 @@ class DiscordClient(discord.Client, SocialMedia):
                 Message(
                     content=self._format_message_for_friend(message),
                     author=message.author.name,
+                    embeds=[
+                        Embed(
+                            url=embed.url,
+                        )
+                        for embed in message.embeds
+                    ],
                     reactions=[
                         Reaction(
                             emoji=self._emoji_name(reaction.emoji),
