@@ -199,9 +199,9 @@ class DiscordClient(discord.Client, SocialMedia):
         message: Message,
         fetch_limit: int = 100,
     ) -> discord.Message:
-        async for message in channel.history(limit=fetch_limit):
-            if message.content == message.content:
-                return message
+        async for msg in channel.history(limit=fetch_limit):
+            if msg.content == message.content:
+                return msg
 
     async def messages(
         self, context: MessageContext, limit: int = 100
