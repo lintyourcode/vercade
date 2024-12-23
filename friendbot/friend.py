@@ -177,7 +177,7 @@ class Friend:
         existing_memories = self._pinecone_index.query(vector=vector, top_k=1)[
             "matches"
         ]
-        if existing_memories and existing_memories[0]["score"] > 0.5:
+        if existing_memories and existing_memories[0]["score"] > 0.7:
             return "Memory already exists"
         self._pinecone_index.upsert(vectors=[(id, vector, metadata)])
         return "Memory saved"
