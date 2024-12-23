@@ -174,9 +174,10 @@ class Friend:
             .get("embedding")
         )
 
-        if self._pinecone_index.query(
-            vector=vector, top_k=1, filter={"score": {"$gt": 0.5}}
-        )["matches"]:
+        existing_memories = self._pinecone_index.query(vector=vector, top_k=1)[
+            "matches"
+        ]
+        if existing_memories and existing_memories[0]["score"] > 0.5:
             return "Memory already exists"
         self._pinecone_index.upsert(vectors=[(id, vector, metadata)])
         return "Memory saved"

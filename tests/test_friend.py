@@ -118,6 +118,7 @@ class TestFriend:
                     {
                         "created_at": "2024-07-23 00:00:00 UTC",
                         "content": "Has met Bob",
+                        "score": 0.9,
                     }
                 ]
             }
@@ -132,4 +133,4 @@ class TestFriend:
         message = Message(content="Hello, Proctor. I'm Bob.", author="Bob#0000")
         social_media.messages = AsyncMock(return_value=[message])
         await friend(context)
-        pinecone_index.query.assert_called_with(vector=ANY, top_k=ANY, filter=ANY)
+        pinecone_index.query.assert_called_with(vector=ANY, top_k=ANY)
