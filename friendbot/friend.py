@@ -175,7 +175,7 @@ class Friend:
         )
 
         if self._pinecone_index.query(
-            vector=vector, top_k=1, filter={"score": {"$gt": 0.9}}
+            vector=vector, top_k=1, filter={"score": {"$gt": 0.5}}
         )["matches"]:
             return "Memory already exists"
         self._pinecone_index.upsert(vectors=[(id, vector, metadata)])
