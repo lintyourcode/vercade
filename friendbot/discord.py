@@ -92,7 +92,7 @@ class DiscordClient(discord.Client, SocialMedia):
         return False
 
     def _format_message_for_friend(self, message: discord.Message) -> str:
-        content = message.content
+        content = message.system_content
 
         # Replace Discord mentions with @username mentions
         for mention in message.mentions:
