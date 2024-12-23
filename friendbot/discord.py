@@ -29,6 +29,13 @@ class DiscordClient(discord.Client, SocialMedia):
         else:
             return None
 
+    def _emoji_name(self, emoji: discord.PartialEmoji | discord.Emoji | str) -> str:
+        if isinstance(emoji, discord.PartialEmoji) or isinstance(emoji, discord.Emoji):
+            return emoji.name
+        if isinstance(emoji, str):
+            return emoji
+        raise ValueError(f"Unknown emoji type: {type(emoji)}")
+
     def _mentions_other_user(self, message: discord.Message) -> bool:
         if len(message.mentions) > 0 and not self._mentioned_in(message):
             # If we're working on a response to a previous message, cancel that
@@ -214,7 +221,7 @@ class DiscordClient(discord.Client, SocialMedia):
                     author=message.author.name,
                     reactions=[
                         Reaction(
-                            emoji=reaction.emoji,
+                            emoji=self._emoji_name(reaction.emoji),
                             users=[user.name async for user in reaction.users()],
                         )
                         for reaction in message.reactions
