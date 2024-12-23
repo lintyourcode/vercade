@@ -78,7 +78,7 @@ class DiscordClient(discord.Client, SocialMedia):
             if not last_message or not self._should_respond_to(last_message):
                 continue
 
-            await self._sleep(-45.0, 60.0)
+            await self._sleep(0.0, 600.0)
             await self._respond_to_messages(channel)
 
     async def on_ready(self) -> None:
