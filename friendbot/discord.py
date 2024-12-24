@@ -163,7 +163,7 @@ class DiscordClient(discord.Client, SocialMedia):
             await self._respond_to_messages(channel)
 
         # Always check and respond to existing messages after we're done with
-        # everyth8ing else
+        # everything else
         await self._respond_to_old_messages()
 
     async def on_message(self, message: discord.Message) -> None:
