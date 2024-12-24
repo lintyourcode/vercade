@@ -2,6 +2,8 @@ import dotenv
 import pytest
 from unittest.mock import AsyncMock, Mock, ANY
 
+from litellm import completion
+
 from friendbot.friend import Friend
 from friendbot.social_media import Message, MessageContext, SocialMedia
 
@@ -10,6 +12,26 @@ MODELS = ["gpt-4o", "claude-3-5-sonnet-20240620"]
 
 
 dotenv.load_dotenv()
+
+
+def match(text: str, condition: str, text_type: str = "text") -> bool:
+    text_type = text_type.lower()
+    response = completion(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "user",
+                "content": f"Does the following {text_type} match the condition? Only respond with 'yes' or 'no'.\n\n{text_type.capitalize()}: {text}\n\nCondition: {condition}",
+            }
+        ],
+    )
+    answer = response["choices"][0]["message"]["content"].lower()
+    if answer == "yes":
+        return True
+    elif answer == "no":
+        return False
+    else:
+        raise ValueError(f"Invalid answer: {answer}")
 
 
 @pytest.fixture
@@ -117,7 +139,7 @@ class TestFriend:
                 "matches": [
                     Mock(
                         metadata={
-                            "content": "Has met Bob",
+                            "content": "Has met Bob#0000",
                             "created_at": "2024-07-23 00:00:00 UTC",
                         },
                         score=0.9,
@@ -132,7 +154,14 @@ class TestFriend:
             embedding_model="text-embedding-3-small",
         )
         context = MessageContext(social_media, "Test Server", "general")
-        message = Message(content="Hello, Proctor. I'm Bob.", author="Bob#0000")
+        message = Message(
+            content="Hello, Proctor. Do you remember me?", author="Bob#0000"
+        )
         social_media.messages = AsyncMock(return_value=[message])
         await friend(context)
-        pinecone_index.query.assert_called_with(vector=ANY, top_k=ANY)
+        social_media.send.assert_called_once()
+        assert match(
+            social_media.send.call_args[0][1].content,
+            "Indicates that the sender has met Bob#0000 before",
+            "message",
+        )
