@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import List
+from typing import Awaitable, Callable, List
+import re
 
 
 class Reaction:
@@ -21,6 +22,8 @@ class MessageContext:
 
 
 class Message:
+    _MENTION_REGEX = re.compile(r"@(\w+)")
+
     def __init__(
         self,
         content: str,
@@ -30,6 +33,7 @@ class Message:
     ) -> None:
         self._content = content
         self._author = author
+        self._mentions = self._MENTION_REGEX.findall(content)
         self._embeds = embeds
         self._reactions = reactions
 
@@ -40,6 +44,10 @@ class Message:
     @property
     def author(self) -> str:
         return self._author
+
+    @property
+    def mentions(self) -> List[str]:
+        return self._mentions
 
     @property
     def reactions(self) -> List[Reaction]:
@@ -54,6 +62,12 @@ class Message:
 
 
 class SocialMedia:
+    def __init__(self) -> None:
+        self.on_ready_callback: Callable[[], Awaitable[None]] | None = None
+        self.on_message_callback: (
+            Callable[[MessageContext, Message], Awaitable[None]] | None
+        ) = None
+
     async def messages(
         self, context: MessageContext, limit: int = 100
     ) -> List[Message]:

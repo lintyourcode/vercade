@@ -6,10 +6,15 @@ from pinecone import ServerlessSpec
 
 from friendbot.discord import DiscordClient
 from friendbot.friend import Friend
+from friendbot.trigger import Trigger
 
 
 def main():
     dotenv.load_dotenv()
+
+    if not os.getenv("FRIENDBOT_NAME"):
+        raise ValueError("FRIENDBOT_NAME environment variable must be set")
+    name = os.getenv("FRIENDBOT_NAME")
 
     if not os.getenv("FRIENDBOT_IDENTITY"):
         raise ValueError("FRIENDBOT_IDENTITY environment variable must be set")
@@ -37,10 +42,13 @@ def main():
             ),
         )
     friend = Friend(
+        name=name,
         identity=identity,
         moderate_messages=os.getenv("FRIENDBOT_MODERATE_MESSAGES"),
         pinecone_index=pinecone.Index(index_name),
         embedding_model=os.getenv("EMBEDDING_MODEL", "text-embedding-3-small"),
     )
+    # TODO: Rename `proctor` to `discord`
     proctor = DiscordClient(friend=friend)
+    Trigger(proctor, friend)
     proctor.run(discord_token)

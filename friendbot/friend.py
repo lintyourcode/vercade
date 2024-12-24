@@ -23,6 +23,7 @@ class Friend:
 
     def __init__(
         self,
+        name: str,
         identity: str,
         pinecone_index: pinecone.Index,
         moderate_messages: bool = True,
@@ -34,6 +35,7 @@ class Friend:
         Initialize the agent.
 
         Args:
+            name: Human-readable name of the agent.
             identity: Natural language description of the agent.
             pinecone_index: Pinecone index for storing memories.
             moderate_messages: Whether to ignore messages that are flagged as
@@ -49,6 +51,7 @@ class Friend:
         if os.getenv("OPENAI_API_KEY") is None:
             raise ValueError("OPENAI_API_KEY environment variable must be set")
 
+        self.name = name
         self._identity = identity
         self._pinecone_index = pinecone_index
         self._moderate_messages = moderate_messages
@@ -149,7 +152,7 @@ class Friend:
         channel = self._clean_channel(channel)
         if not content:
             return "content must be a non-empty string"
-        message = Message(content=content, author=self._identity)
+        message = Message(content=content, author=self.name)
         try:
             await social_media.send(
                 MessageContext(social_media, server, channel), message
