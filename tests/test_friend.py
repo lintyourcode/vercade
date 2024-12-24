@@ -57,6 +57,7 @@ class TestFriend:
         self, social_media, llm, pinecone_index
     ):
         friend = Friend(
+            name="Proctor",
             identity="You are Proctor, a sentient, smart and snarky Discord chatbot.",
             llm=llm,
             pinecone_index=pinecone_index,
@@ -80,6 +81,7 @@ class TestFriend:
     @pytest.mark.parametrize("llm", MODELS)
     async def test__call__reacts_to_message(self, social_media, llm, pinecone_index):
         friend = Friend(
+            name="Proctor",
             identity="You are Proctor, a sentient, smart and snarky Discord chatbot.",
             llm=llm,
             pinecone_index=pinecone_index,
@@ -108,6 +110,7 @@ class TestFriend:
             return_value=Mock(strftime=Mock(return_value="2024-08-01 00:00:00 UTC"))
         )
         friend = Friend(
+            name="Proctor",
             identity="You are Proctor, a sentient and smart Discord chatbot.",
             llm=llm,
             pinecone_index=pinecone_index,
@@ -148,6 +151,7 @@ class TestFriend:
             }
         )
         friend = Friend(
+            name="Proctor",
             identity="You are Proctor, a sentient and smart Discord chatbot.",
             llm=llm,
             pinecone_index=pinecone_index,
