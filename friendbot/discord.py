@@ -4,7 +4,6 @@ import re
 from typing import List, Tuple
 
 import discord
-import openai
 
 from friendbot.friend import Friend
 from friendbot.social_media import Embed, Message, MessageContext, Reaction, SocialMedia
@@ -125,25 +124,17 @@ class DiscordClient(discord.Client, SocialMedia):
         return content
 
     async def _respond_to_messages(self, channel: discord.TextChannel) -> None:
-        responses = None
-        while responses is None:
-            try:
-                last_message = await self._get_last_message(channel)
-                if not self._should_respond_to(last_message):
-                    return
+        last_message = await self._get_last_message(channel)
+        if not self._should_respond_to(last_message):
+            return
 
-                responses = await self._friend(
-                    MessageContext(
-                        social_media=self,
-                        server=channel.guild.name,
-                        channel=channel.name,
-                    )
-                )
-
-            except openai.OpenAIError as e:
-                print(f"OpenAIError ({e}) - waiting to retry...")
-                # Wait before trying again
-                await self._sleep(60.0, 3.0 * 60.0)
+        responses = await self._friend(
+            MessageContext(
+                social_media=self,
+                server=channel.guild.name,
+                channel=channel.name,
+            )
+        )
 
         for guild_name, conversations in responses.items():
             for channel_name, responses in conversations.items():
