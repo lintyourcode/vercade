@@ -16,6 +16,10 @@ _USER_MESSAGE_TEMPLATE = "You just received a message in the Discord server {ser
 
 
 class Friend:
+    """
+    Social media AI agent.
+    """
+
     def __init__(
         self,
         identity: str,
@@ -25,6 +29,19 @@ class Friend:
         web_llm: Optional[str] = None,
         embedding_model: Optional[str] = None,
     ) -> None:
+        """
+        Initialize the agent.
+
+        Args:
+            identity: Natural language description of the agent.
+            pinecone_index: Pinecone index for storing memories.
+            moderate_messages: Whether to ignore messages that are flagged as
+                inappropriate.
+            llm: LLM to use for the agent.
+            web_llm: LLM to use to search the web.
+            embedding_model: Embedding model to use for the agent.
+        """
+
         if not identity:
             raise ValueError("identity must be a non-empty string")
 
@@ -388,10 +405,10 @@ class Friend:
 
     async def __call__(self, context: MessageContext) -> None:
         """
-        Perform action(s) in response to a message.
+        Respond to recent messages in the provided conversation.
 
         Args:
-            context: The context where the message was received.
+            context: Conversation context.
         """
 
         functions = {
