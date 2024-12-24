@@ -115,11 +115,13 @@ class TestFriend:
         pinecone_index.query = Mock(
             return_value={
                 "matches": [
-                    {
-                        "created_at": "2024-07-23 00:00:00 UTC",
-                        "content": "Has met Bob",
-                        "score": 0.9,
-                    }
+                    Mock(
+                        metadata={
+                            "content": "Has met Bob",
+                            "created_at": "2024-07-23 00:00:00 UTC",
+                        },
+                        score=0.9,
+                    )
                 ]
             }
         )
