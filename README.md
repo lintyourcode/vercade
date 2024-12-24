@@ -2,7 +2,12 @@
 
 > If you don't make friends, make enemies.
 
-Friendbot is a GPT-4 powered Discord bot
+AI Discord bot that can:
+
+* Respond to messages
+* React to messages
+* Search the internet
+* Store memories
 
 ## Installation
 
