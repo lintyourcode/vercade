@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, Mock, ANY
 
 from litellm import completion
 
-from friendbot.friend import Friend
+from friendbot.agent import Agent
 from friendbot.social_media import Message, MessageContext, SocialMedia
 
 
@@ -56,7 +56,7 @@ class TestFriend:
     async def test__call__with_greeting_responds_with_nonempty_message(
         self, social_media, llm, pinecone_index
     ):
-        friend = Friend(
+        friend = Agent(
             name="Proctor",
             identity="You are Proctor, a sentient, smart and snarky Discord chatbot.",
             llm=llm,
@@ -80,7 +80,7 @@ class TestFriend:
 
     @pytest.mark.parametrize("llm", MODELS)
     async def test__call__reacts_to_message(self, social_media, llm, pinecone_index):
-        friend = Friend(
+        friend = Agent(
             name="Proctor",
             identity="You are Proctor, a sentient, smart and snarky Discord chatbot.",
             llm=llm,
@@ -105,11 +105,11 @@ class TestFriend:
 
     @pytest.mark.parametrize("llm", MODELS)
     async def test__call__saves_memory(self, mocker, social_media, llm, pinecone_index):
-        datetime = mocker.patch("friendbot.friend.datetime")
+        datetime = mocker.patch("friendbot.agent.datetime")
         datetime.now = Mock(
             return_value=Mock(strftime=Mock(return_value="2024-08-01 00:00:00 UTC"))
         )
-        friend = Friend(
+        friend = Agent(
             name="Proctor",
             identity="You are Proctor, a sentient and smart Discord chatbot.",
             llm=llm,
@@ -150,7 +150,7 @@ class TestFriend:
                 ]
             }
         )
-        friend = Friend(
+        friend = Agent(
             name="Proctor",
             identity="You are Proctor, a sentient and smart Discord chatbot.",
             llm=llm,

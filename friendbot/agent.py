@@ -16,7 +16,7 @@ from friendbot.social_media import Message, MessageContext, SocialMedia
 _USER_MESSAGE_TEMPLATE = "You received a message in the Discord server {server}'s channel #{channel}. You may use any tools available to you, or do nothing at all."
 
 
-class Friend:
+class Agent:
     """
     Social media AI agent.
     """

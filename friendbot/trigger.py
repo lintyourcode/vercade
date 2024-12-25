@@ -1,16 +1,16 @@
 import asyncio
 import random
-from friendbot.friend import Friend
+from friendbot.agent import Agent
 from friendbot.social_media import Message, MessageContext, SocialMedia
 
 
 class Trigger:
     """
-    Trigger for invoking a friend.
+    Trigger for invoking an agent.
     """
 
-    def __init__(self, social_media: SocialMedia, friend: Friend) -> None:
-        self._friend = friend
+    def __init__(self, social_media: SocialMedia, friend: Agent) -> None:
+        self._agent = friend
         self._response_task: asyncio.Task | None = None
 
         social_media.on_ready_callback = self.connect
@@ -18,11 +18,11 @@ class Trigger:
 
     def _should_respond(self, message: Message) -> bool:
         # TODO: Replace identity with some user ID
-        if message.author == self._friend._identity:
+        if message.author == self._agent._identity:
             return False
 
         # TODO: Replace identity with some user ID
-        if len(message.mentions) > 0 and self._friend._identity not in message.mentions:
+        if len(message.mentions) > 0 and self._agent._identity not in message.mentions:
             return False
 
         return True
@@ -32,7 +32,7 @@ class Trigger:
         if len(messages) > 0 and not self._should_respond(messages[0]):
             return
 
-        await self._friend(context)
+        await self._agent(context)
 
     async def connect(self) -> None:
         """

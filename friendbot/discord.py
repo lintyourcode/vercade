@@ -4,12 +4,12 @@ from typing import List, Tuple
 
 import discord
 
-from friendbot.friend import Friend
+from friendbot.agent import Agent
 from friendbot.social_media import Embed, Message, MessageContext, Reaction, SocialMedia
 
 
 class DiscordClient(discord.Client, SocialMedia):
-    def __init__(self, *, friend: Friend = None, loop=None, **options) -> None:
+    def __init__(self, *, friend: Agent = None, loop=None, **options) -> None:
         intents = discord.Intents.default()
         intents.members = True
         discord.Client.__init__(self, loop=loop, intents=intents, **options)
@@ -19,7 +19,7 @@ class DiscordClient(discord.Client, SocialMedia):
             raise ValueError("please provide a Friend instance")
 
         self._respond_task = None
-        self._friend = friend
+        self._agent = friend
 
     async def _discord_message_to_message(self, message: discord.Message) -> Message:
         content = message.system_content
@@ -49,9 +49,9 @@ class DiscordClient(discord.Client, SocialMedia):
         raise ValueError(f"Unknown emoji type: {type(emoji)}")
 
     async def on_ready(self) -> None:
-        if self._friend.name != self.user.name:
+        if self._agent.name != self.user.name:
             raise ValueError(
-                f"Friend name {self._friend.name} does not match Discord bot name {self.user.name}"
+                f"Friend name {self._agent.name} does not match Discord bot name {self.user.name}"
             )
 
         if self.on_ready_callback:

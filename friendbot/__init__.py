@@ -4,8 +4,8 @@ import dotenv
 from pinecone.grpc import PineconeGRPC as Pinecone
 from pinecone import ServerlessSpec
 
+from friendbot.agent import Agent
 from friendbot.discord import DiscordClient
-from friendbot.friend import Friend
 from friendbot.trigger import Trigger
 
 
@@ -41,7 +41,7 @@ def main():
                 region=os.getenv("PINECONE_REGION", "us-west-2"),
             ),
         )
-    friend = Friend(
+    friend = Agent(
         name=name,
         identity=identity,
         moderate_messages=os.getenv("FRIENDBOT_MODERATE_MESSAGES"),
