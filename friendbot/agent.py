@@ -56,7 +56,9 @@ class Agent:
         self._pinecone_index = pinecone_index
         self._moderate_messages = moderate_messages
         self._llm = llm or os.getenv("FRIENDBOT_LLM")
-        self._embedding_model = embedding_model or os.getenv("EMBEDDING_MODEL")
+        self._embedding_model = embedding_model or os.getenv(
+            "FRIENDBOT_EMBEDDING_MODEL"
+        )
         self._web_llm = web_llm or os.getenv("FRIENDBOT_WEB_LLM")
 
     def _format_author(self, author: str) -> str:

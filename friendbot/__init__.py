@@ -46,7 +46,9 @@ def main():
         identity=identity,
         moderate_messages=os.getenv("FRIENDBOT_MODERATE_MESSAGES"),
         pinecone_index=pinecone.Index(index_name),
-        embedding_model=os.getenv("EMBEDDING_MODEL", "text-embedding-3-small"),
+        embedding_model=os.getenv(
+            "FRIENDBOT_EMBEDDING_MODEL", "text-embedding-3-small"
+        ),
     )
     # TODO: Rename `proctor` to `discord`
     proctor = DiscordClient(friend=friend)

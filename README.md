@@ -72,7 +72,7 @@ All [LiteLLM](https://docs.litellm.ai/docs/providers) models are supported.
 
 * The `FRIENDBOT_LLM` environment variable is used to configure the bot's language model.
 * The `FRIENDBOT_WEB_LLM` environment variable is used to configure the bot's web language model.
-* The `EMBEDDING_MODEL` environment variable is used to configure the bot's embedding model.
+* The `FRIENDBOT_EMBEDDING_MODEL` environment variable is used to configure the bot's embedding model.
 
 ### Moderation
 
