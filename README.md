@@ -82,6 +82,10 @@ The `FRIENDBOT_MODERATE_MESSAGES` environment variable is used to configure the 
 FRIENDBOT_MODERATE_MESSAGES=true
 ```
 
+### Contributing
+
+Contributions are welcome! Please use [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) and run `poetry run pytest` to test your changes.
+
 ### License
 
 Friendbot is open source software released under the [GNU General Public License v3.0](LICENSE).
