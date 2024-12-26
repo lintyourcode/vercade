@@ -55,7 +55,7 @@ class Agent:
         self._identity = identity
         self._pinecone_index = pinecone_index
         self._moderate_messages = moderate_messages
-        self._llm = llm or os.getenv("LLM")
+        self._llm = llm or os.getenv("FRIENDBOT_LLM")
         self._embedding_model = embedding_model or os.getenv("EMBEDDING_MODEL")
         self._web_llm = web_llm or os.getenv("FRIENDBOT_WEB_LLM")
 
