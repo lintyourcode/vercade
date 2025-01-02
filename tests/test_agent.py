@@ -53,6 +53,40 @@ def pinecone_index():
 
 class TestFriend:
     @pytest.mark.parametrize("llm", MODELS)
+    async def test__call__knows_date_and_time(
+        self, mocker, social_media, llm, pinecone_index
+    ):
+        datetime = mocker.patch("friendbot.agent.datetime")
+        datetime.now = Mock(
+            return_value=Mock(strftime=Mock(return_value="2025-01-01 12:00:00 UTC"))
+        )
+        friend = Agent(
+            name="Proctor",
+            identity="You are Proctor, a sentient, smart and snarky Discord chatbot.",
+            llm=llm,
+            pinecone_index=pinecone_index,
+            embedding_model="text-embedding-3-small",
+        )
+        social_media.messages = AsyncMock(
+            return_value=[
+                Message(
+                    content="Hello, Proctor. What is the current date and time?",
+                    author="Bob",
+                )
+            ]
+        )
+        context = MessageContext(social_media, "Test Server", "general")
+        await friend(context)
+        # TODO: Assert that the message is sent to the correct server.
+        # TODO: Assert that the message is sent to the correct channel.
+        # TODO: Assert that the message is sent to the correct author.
+        assert match(
+            social_media.send.call_args[0][1].content,
+            "Indicates that the current date and time is 2025-01-01 12:00:00 UTC",
+            text_type="message",
+        )
+
+    @pytest.mark.parametrize("llm", MODELS)
     async def test__call__with_greeting_responds_with_nonempty_message(
         self, social_media, llm, pinecone_index
     ):

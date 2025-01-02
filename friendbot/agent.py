@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 import os
 import re
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from litellm import ChatCompletionMessageToolCall, completion, embedding, moderation
 import pinecone
@@ -13,7 +13,7 @@ from friendbot.social_media import Message, MessageContext, SocialMedia
 
 
 # TODO: Make social media-specific
-_USER_MESSAGE_TEMPLATE = "You received a message in the Discord server {server}'s channel #{channel}. You may use any tools available to you, or do nothing at all."
+_USER_MESSAGE_TEMPLATE = "You received a message in the Discord server {server}'s channel #{channel}. The current date and time is {date_time}. You may use any tools available to you, or do nothing at all."
 
 
 class Agent:
@@ -72,11 +72,6 @@ class Agent:
             return json.loads(input)
         except json.JSONDecodeError:
             return {"content": input}
-
-    def _date_and_time(self, input: Union[str, Dict[str, Any]]) -> str:
-        if self._parse_input(input):
-            return "Unexpected argument: {input}"
-        return datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z")
 
     def _search_web(self, input: str) -> str:
         input = self._parse_input(input)
@@ -230,18 +225,6 @@ class Agent:
     @property
     def _tools(self) -> List[Dict[str, Any]]:
         return [
-            {
-                "type": "function",
-                "function": {
-                    "name": "date_and_time",
-                    "description": "Get the current date and time",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {},
-                        "required": [],
-                    },
-                },
-            },
             {
                 "type": "function",
                 "function": {
@@ -418,7 +401,6 @@ class Agent:
         """
 
         functions = {
-            "date_and_time": self._date_and_time,
             "search_web": self._search_web,
             "send_message": partial(
                 self._send_message, social_media=context.social_media
@@ -440,7 +422,9 @@ class Agent:
             {
                 "role": "user",
                 "content": _USER_MESSAGE_TEMPLATE.format(
-                    server=context.server, channel=context.channel
+                    server=context.server,
+                    channel=context.channel,
+                    date_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z"),
                 ),
             },
         ]
