@@ -13,7 +13,7 @@ from friendbot.social_media import Message, MessageContext, SocialMedia
 
 
 # TODO: Make social media-specific
-_USER_MESSAGE_TEMPLATE = "You received a message in the Discord server {server}'s channel #{channel}. The current date and time is {date_time}. You may use any tools available to you, or do nothing at all."
+_USER_MESSAGE_TEMPLATE = "You received a message in the Discord server {server}'s channel #{channel}. The current date and time is {date_time}. You may use any tools available to you, or do nothing at all. The user cannot see your responses directly, so you must use the tools if you would like to respond to the user."
 
 
 class Agent:

@@ -17,12 +17,10 @@ class Trigger:
         social_media.on_message_callback = self.read_message
 
     def _should_respond(self, message: Message) -> bool:
-        # TODO: Replace identity with some user ID
-        if message.author == self._agent._identity:
+        if message.author == self._agent.name:
             return False
 
-        # TODO: Replace identity with some user ID
-        if len(message.mentions) > 0 and self._agent._identity not in message.mentions:
+        if len(message.mentions) > 0 and self._agent.name not in message.mentions:
             return False
 
         return True
