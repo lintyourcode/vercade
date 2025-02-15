@@ -62,7 +62,7 @@ class Agent:
         self._web_llm = web_llm or os.getenv("FRIENDBOT_WEB_LLM")
 
     def _format_author(self, author: str) -> str:
-        if author == self._identity:
+        if author == self.name:
             return "You"
         else:
             return author
