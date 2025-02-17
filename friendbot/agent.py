@@ -1,6 +1,6 @@
 import asyncio
 from functools import partial
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 import os
 import re
@@ -424,7 +424,7 @@ class Agent:
                 "content": _USER_MESSAGE_TEMPLATE.format(
                     server=context.server,
                     channel=context.channel,
-                    date_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z"),
+                    date_time=datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z"),
                 ),
             },
         ]
