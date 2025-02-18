@@ -1,5 +1,7 @@
 FROM python:3.11-slim
 
+RUN apt update && apt install -y xvfb
+
 ENV PYTHONUNBUFFERED 1
 ENV POETRY_VERSION 1.8.3
 
@@ -14,4 +16,4 @@ RUN poetry config virtualenvs.create false \
 
 COPY . .
 
-CMD ["poetry", "run", "python", "-m", "friendbot"]
+CMD ["xvfb-run", "-a", "poetry", "run", "python", "-m", "friendbot"]
