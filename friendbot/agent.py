@@ -6,7 +6,8 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
-from browser_use import Agent as BrowserAgent
+from browser_use import Agent as BrowserAgent, Browser, BrowserConfig
+from browser_use.browser.context import BrowserContext
 from langchain_community.chat_models import ChatLiteLLM
 from litellm import ChatCompletionMessageToolCall, completion, embedding, moderation
 import pinecone
@@ -80,10 +81,13 @@ class Agent:
         query = input.get("query")
         if not query:
             return "query must be a non-empty string"
+        browser = Browser(config=BrowserConfig(headless=True))
         result = await BrowserAgent(
             task=query,
             llm=ChatLiteLLM(model=self._fast_llm),
+            browser_context=BrowserContext(browser=browser),
         ).run()
+        await browser.close()
         return result.final_result() or "No results found"
 
     def _clean_channel(self, channel: str) -> str:
