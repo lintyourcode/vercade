@@ -24,6 +24,14 @@ def main():
         raise ValueError("DISCORD_TOKEN environment variable must be set")
     discord_token = os.getenv("DISCORD_TOKEN")
 
+    if not os.getenv("FRIENDBOT_LLM"):
+        raise ValueError("FRIENDBOT_LLM environment variable must be set")
+    llm = os.getenv("FRIENDBOT_LLM")
+
+    if not os.getenv("FRIENDBOT_FAST_LLM"):
+        raise ValueError("FRIENDBOT_FAST_LLM environment variable must be set")
+    fast_llm = os.getenv("FRIENDBOT_FAST_LLM")
+
     if not os.getenv("PINECONE_API_KEY"):
         raise ValueError("PINECONE_API_KEY environment variable must be set")
     if not os.getenv("PINECONE_INDEX_NAME"):
@@ -46,6 +54,8 @@ def main():
         name=name,
         identity=identity,
         moderate_messages=os.getenv("FRIENDBOT_MODERATE_MESSAGES"),
+        llm=llm,
+        fast_llm=fast_llm,
         pinecone_index=pinecone.Index(index_name),
         embedding_model=os.getenv(
             "FRIENDBOT_EMBEDDING_MODEL", "text-embedding-3-small"
