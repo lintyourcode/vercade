@@ -63,6 +63,16 @@ class Agent:
         self._embedding_model = embedding_model or os.getenv(
             "FRIENDBOT_EMBEDDING_MODEL"
         )
+        self._browser = None
+
+    async def __aenter__(self):
+        self._browser = Browser(config=BrowserConfig(headless=True))
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self._browser:
+            await self._browser.close()
+            self._browser = None
 
     def _format_author(self, author: str) -> str:
         if author == self.name:
@@ -81,13 +91,11 @@ class Agent:
         query = input.get("query")
         if not query:
             return "query must be a non-empty string"
-        browser = Browser(config=BrowserConfig(headless=True))
         result = await BrowserAgent(
             task=query,
             llm=ChatLiteLLM(model=self._fast_llm),
-            browser_context=BrowserContext(browser=browser),
+            browser_context=BrowserContext(browser=self._browser),
         ).run()
-        await browser.close()
         return result.final_result() or "No results found"
 
     def _clean_channel(self, channel: str) -> str:

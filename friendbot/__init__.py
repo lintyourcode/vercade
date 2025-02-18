@@ -1,6 +1,7 @@
 import os
 
 import dotenv
+import nest_asyncio
 from pinecone.grpc import PineconeGRPC as Pinecone
 from pinecone import ServerlessSpec
 
@@ -9,8 +10,9 @@ from friendbot.discord import DiscordClient
 from friendbot.trigger import Trigger
 
 
-def main():
+async def main():
     dotenv.load_dotenv()
+    nest_asyncio.apply()
 
     if not os.getenv("FRIENDBOT_NAME"):
         raise ValueError("FRIENDBOT_NAME environment variable must be set")
@@ -50,7 +52,7 @@ def main():
             ),
         )
     # TODO: Rename `friend` to `agent`
-    friend = Agent(
+    async with Agent(
         name=name,
         identity=identity,
         moderate_messages=os.getenv("FRIENDBOT_MODERATE_MESSAGES"),
@@ -60,8 +62,8 @@ def main():
         embedding_model=os.getenv(
             "FRIENDBOT_EMBEDDING_MODEL", "text-embedding-3-small"
         ),
-    )
-    # TODO: Rename `proctor` to `discord`
-    proctor = DiscordClient(friend=friend)
-    Trigger(proctor, friend)
-    proctor.run(discord_token)
+    ) as friend:
+        # TODO: Rename `proctor` to `discord`
+        proctor = DiscordClient(friend=friend)
+        Trigger(proctor, friend)
+        proctor.run(discord_token)
