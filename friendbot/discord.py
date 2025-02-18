@@ -28,17 +28,23 @@ class DiscordClient(discord.Client, SocialMedia):
         for mention in message.mentions:
             content = content.replace(mention.mention, f"@{mention.name}")
 
+        reactions = []
+        for reaction in message.reactions:
+            users = []
+            async for user in reaction.users():
+                users.append(user.name)
+            reactions.append(
+                Reaction(
+                    emoji=self._emoji_name(reaction.emoji),
+                    users=users,
+                )
+            )
+
         return Message(
             content=content,
             author=message.author.name,
             embeds=[Embed(url=embed.url) for embed in message.embeds],
-            reactions=[
-                Reaction(
-                    emoji=self._emoji_name(reaction.emoji),
-                    users=[user.name async for user in reaction.users()],
-                )
-                for reaction in message.reactions
-            ],
+            reactions=reactions,
         )
 
     def _emoji_name(self, emoji: discord.PartialEmoji | discord.Emoji | str) -> str:
