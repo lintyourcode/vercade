@@ -1,5 +1,7 @@
 FROM python:3.11-slim
 
+RUN apt-get update && apt-get install -y xvfb
+
 ENV PYTHONUNBUFFERED 1
 ENV POETRY_VERSION 1.8.3
 
@@ -14,4 +16,7 @@ RUN poetry config virtualenvs.create false \
 
 COPY . .
 
-CMD ["poetry", "run", "python", "-m", "friendbot"]
+RUN poetry run playwright install chromium
+RUN poetry run playwright install-deps chromium
+
+CMD ["poetry", "run", "xvfb-run", "-a", "python", "-m", "friendbot"]
