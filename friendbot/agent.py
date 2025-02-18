@@ -6,6 +6,8 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
+from browser_use import Agent as BrowserAgent
+from langchain_community.chat_models import ChatLiteLLM
 from litellm import ChatCompletionMessageToolCall, completion, embedding, moderation
 import pinecone
 
@@ -28,7 +30,7 @@ class Agent:
         pinecone_index: pinecone.Index,
         moderate_messages: bool = True,
         llm: Optional[str] = None,
-        web_llm: Optional[str] = None,
+        fast_llm: Optional[str] = None,
         embedding_model: Optional[str] = None,
     ) -> None:
         """
@@ -41,7 +43,7 @@ class Agent:
             moderate_messages: Whether to ignore messages that are flagged as
                 inappropriate.
             llm: LLM to use for the agent.
-            web_llm: LLM to use to search the web.
+            fast_llm: Smaller, faster LLM to use for simple tasks.
             embedding_model: Embedding model to use for the agent.
         """
 
@@ -56,10 +58,10 @@ class Agent:
         self._pinecone_index = pinecone_index
         self._moderate_messages = moderate_messages
         self._llm = llm or os.getenv("FRIENDBOT_LLM")
+        self._fast_llm = fast_llm or os.getenv("FRIENDBOT_FAST_LLM")
         self._embedding_model = embedding_model or os.getenv(
             "FRIENDBOT_EMBEDDING_MODEL"
         )
-        self._web_llm = web_llm or os.getenv("FRIENDBOT_WEB_LLM")
 
     def _format_author(self, author: str) -> str:
         if author == self.name:
@@ -73,31 +75,16 @@ class Agent:
         except json.JSONDecodeError:
             return {"content": input}
 
-    def _search_web(self, input: str) -> str:
+    async def _search_web(self, input: str) -> str:
         input = self._parse_input(input)
         query = input.get("query")
         if not query:
             return "query must be a non-empty string"
-        return (
-            completion(
-                model=self._web_llm,
-                api_key=os.getenv("PERPLEXITY_API_KEY"),
-                api_base="https://api.perplexity.ai",
-                temperature=0.1,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a helpful assistant that searches the web for information.",
-                    },
-                    {
-                        "role": "user",
-                        "content": query,
-                    },
-                ],
-            )
-            .choices[0]
-            .message.content
-        )
+        result = await BrowserAgent(
+            task=query,
+            llm=ChatLiteLLM(model=self._fast_llm),
+        ).run()
+        return result.final_result() or "No results found"
 
     def _clean_channel(self, channel: str) -> str:
         if channel.startswith("#"):

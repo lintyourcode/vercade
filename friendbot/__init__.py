@@ -41,6 +41,7 @@ def main():
                 region=os.getenv("PINECONE_REGION", "us-west-2"),
             ),
         )
+    # TODO: Rename `friend` to `agent`
     friend = Agent(
         name=name,
         identity=identity,

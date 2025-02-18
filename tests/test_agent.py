@@ -9,9 +9,22 @@ from friendbot.social_media import Message, MessageContext, SocialMedia
 
 
 MODELS = ["gpt-4o", "claude-3-5-sonnet-20240620"]
+FAST_MODELS = ["gpt-4o-mini"]
 
 
 dotenv.load_dotenv()
+
+
+def get_parameters() -> list[tuple[str, str]]:
+    """
+    Return a list of parameters for the tests.
+    """
+
+    return [
+        (model, fast_model)
+        for model in MODELS
+        for fast_model in FAST_MODELS
+    ]
 
 
 def match(text: str, condition: str, text_type: str = "text") -> bool:
@@ -52,9 +65,9 @@ def pinecone_index():
 
 
 class TestFriend:
-    @pytest.mark.parametrize("llm", MODELS)
+    @pytest.mark.parametrize("llm, fast_llm", get_parameters())
     async def test__call__knows_date_and_time(
-        self, mocker, social_media, llm, pinecone_index
+        self, mocker, social_media, llm, fast_llm, pinecone_index
     ):
         datetime = mocker.patch("friendbot.agent.datetime")
         datetime.now = Mock(
@@ -64,6 +77,7 @@ class TestFriend:
             name="Proctor",
             identity="You are Proctor, a sentient, smart and snarky Discord chatbot.",
             llm=llm,
+            fast_llm=fast_llm,
             pinecone_index=pinecone_index,
             embedding_model="text-embedding-3-small",
         )
@@ -86,9 +100,9 @@ class TestFriend:
             text_type="message",
         )
 
-    @pytest.mark.parametrize("llm", MODELS)
+    @pytest.mark.parametrize("llm, fast_llm", get_parameters())
     async def test__call__with_greeting_responds_with_nonempty_message(
-        self, social_media, llm, pinecone_index
+        self, social_media, llm, fast_llm, pinecone_index
     ):
         friend = Agent(
             name="Proctor",
@@ -112,8 +126,10 @@ class TestFriend:
         assert isinstance(content, str)
         assert content
 
-    @pytest.mark.parametrize("llm", MODELS)
-    async def test__call__reacts_to_message(self, social_media, llm, pinecone_index):
+    @pytest.mark.parametrize("llm, fast_llm", get_parameters())
+    async def test__call__reacts_to_message(
+        self, social_media, llm, fast_llm, pinecone_index
+    ):
         friend = Agent(
             name="Proctor",
             identity="You are Proctor, a sentient, smart and snarky Discord chatbot.",
@@ -137,8 +153,10 @@ class TestFriend:
         )
         assert social_media.react.call_args[0][1].author == "Bob#0000"
 
-    @pytest.mark.parametrize("llm", MODELS)
-    async def test__call__saves_memory(self, mocker, social_media, llm, pinecone_index):
+    @pytest.mark.parametrize("llm, fast_llm", get_parameters())
+    async def test__call__saves_memory(
+        self, mocker, social_media, llm, fast_llm, pinecone_index
+    ):
         datetime = mocker.patch("friendbot.agent.datetime")
         datetime.now = Mock(
             return_value=Mock(strftime=Mock(return_value="2024-08-01 00:00:00 UTC"))
@@ -167,9 +185,9 @@ class TestFriend:
             ]
         )
 
-    @pytest.mark.parametrize("llm", MODELS)
+    @pytest.mark.parametrize("llm, fast_llm", get_parameters())
     async def test__call__retrieves_memory_from_pinecone(
-        self, social_media, llm, pinecone_index
+        self, social_media, llm, fast_llm, pinecone_index
     ):
         pinecone_index.query = Mock(
             return_value={
@@ -201,5 +219,30 @@ class TestFriend:
         assert match(
             social_media.send.call_args[0][1].content,
             "Indicates that the sender has met Bob#0000 before",
+            "message",
+        )
+
+    @pytest.mark.parametrize("llm, fast_llm", get_parameters())
+    async def test__call__searches_web(
+        self, mocker, social_media, llm, fast_llm, pinecone_index
+    ):
+        friend = Agent(
+            name="Proctor",
+            identity="You are Proctor, a sentient and intelligent Discord chatbot.",
+            llm=llm,
+            fast_llm=fast_llm,
+            pinecone_index=pinecone_index,
+            embedding_model="text-embedding-3-small",
+        )
+        context = MessageContext(social_media, "Test Server", "general")
+        message = Message(
+            content="What is the weather in Tokyo?", author="Bob#0000"
+        )
+        social_media.messages = AsyncMock(return_value=[message])
+        await friend(context)
+        social_media.send.assert_called_once()
+        assert match(
+            social_media.send.call_args[0][1].content,
+            "Includes information about the weather in Tokyo",
             "message",
         )

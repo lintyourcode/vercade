@@ -29,6 +29,7 @@ Clone this repo and run:
 
 ```sh
 poetry install
+poetry run playwright install
 cp template.env .env
 $EDITOR .env
 ```
@@ -70,8 +71,8 @@ More complex identities generally result in more interesting responses.
 
 All [LiteLLM](https://docs.litellm.ai/docs/providers) models are supported.
 
-* The `FRIENDBOT_LLM` environment variable is used to configure the bot's language model.
-* The `FRIENDBOT_WEB_LLM` environment variable is used to configure the bot's web language model.
+* The `FRIENDBOT_LLM` environment variable is used to configure the bot's intelligent language model for complex tasks.
+* The `FRIENDBOT_FAST_LLM` environment variable is used to configure the bot's fast language model for simple tasks.
 * The `FRIENDBOT_EMBEDDING_MODEL` environment variable is used to configure the bot's embedding model.
 
 ### Moderation
