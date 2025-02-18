@@ -11,7 +11,7 @@ openai = "^1.37.1"
 python-dotenv = "^1.0.0"
 discord = "^2.3.2"
 litellm = "^1.61.3"
-pinecone-client = {extras = ["grpc"], version = "^5.0.1"}
+pinecone-client = "^5.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
