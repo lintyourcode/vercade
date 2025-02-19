@@ -91,13 +91,13 @@ class Agent:
         query = input.get("query")
         if not query:
             return "query must be a non-empty string"
-        result = await BrowserAgent(
-            task=query,
-            llm=ChatLiteLLM(model=self._fast_llm),
-            generate_gif=False,
-            # TODO(#1): Close browser context after use
-            browser_context=BrowserContext(browser=self._browser),
-        ).run()
+        async with await self._browser.new_context() as context:
+            result = await BrowserAgent(
+                task=query,
+                llm=ChatLiteLLM(model=self._fast_llm),
+                generate_gif=False,
+                browser_context=BrowserContext(browser=context),
+            ).run()
         return result.final_result() or "No results found"
 
     def _clean_channel(self, channel: str) -> str:
