@@ -94,6 +94,8 @@ class Agent:
         result = await BrowserAgent(
             task=query,
             llm=ChatLiteLLM(model=self._fast_llm),
+            generate_gif=False,
+            # TODO(#1): Close browser context after use
             browser_context=BrowserContext(browser=self._browser),
         ).run()
         return result.final_result() or "No results found"
