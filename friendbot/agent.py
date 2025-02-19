@@ -98,7 +98,10 @@ class Agent:
                 use_vision=False,
                 browser_context=context,
             ).run()
-        return result.final_result() or "No results found"
+        if result.final_result():
+            return f"Search results: {result.final_result()}\n\nSources:\n{'\n'.join(['- ' + url for url in result.urls()])}"
+        else:
+            return "No results found"
 
     def _clean_channel(self, channel: str) -> str:
         if channel.startswith("#"):
