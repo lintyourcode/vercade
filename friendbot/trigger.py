@@ -1,7 +1,12 @@
 import asyncio
 import random
+from datetime import timedelta
+
 from friendbot.agent import Agent
 from friendbot.social_media import Message, MessageContext, SocialMedia
+
+
+SCHEDULE_INTERVAL = timedelta(hours=1)
 
 
 class Trigger:
@@ -11,8 +16,11 @@ class Trigger:
 
     def __init__(self, social_media: SocialMedia, friend: Agent) -> None:
         self._agent = friend
+        # TODO: Rename `response_task` to `trigger_task`
         self._response_task: asyncio.Task | None = None
+        self._schedule_task: asyncio.Task | None = None
 
+        self._social_media = social_media
         social_media.on_ready_callback = self.connect
         social_media.on_message_callback = self.read_message
 
@@ -24,6 +32,17 @@ class Trigger:
             return False
 
         return True
+
+    async def _run_idle(self, social_media: SocialMedia) -> None:
+        while True:
+            if (not self._response_task or self._response_task.done()) and random.randint(0, 1) == 0:
+                self._response_task = asyncio.create_task(
+                    self._agent(
+                        "You're bored, and you're looking for something interesting to do.",
+                        social_media=social_media,
+                    )
+                )
+            await asyncio.sleep(SCHEDULE_INTERVAL.total_seconds())
 
     async def _respond(self, context: MessageContext) -> None:
         messages = await context.social_media.messages(context, limit=1)
@@ -44,7 +63,10 @@ class Trigger:
 
         print("Connected")
 
-        # TODO: Respond to old messages in various contexts
+        # Start scheduled task
+        self._schedule_task = asyncio.create_task(
+            self._run_idle(self._social_media)
+        )
 
     async def _read_message(self, context: MessageContext, message: Message) -> None:
         # Send a few messages
