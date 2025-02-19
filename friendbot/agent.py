@@ -73,12 +73,6 @@ class Agent:
             await self._browser.close()
             self._browser = None
 
-    def _format_author(self, author: str) -> str:
-        if author == self.name:
-            return "You"
-        else:
-            return author
-
     def _parse_input(self, input: str) -> Dict[str, Any]:
         try:
             return json.loads(input)
@@ -143,7 +137,7 @@ class Agent:
         return json.dumps(
             [
                 {
-                    "author": self._format_author(message.author),
+                    "author": message.author,
                     "content": message.content,
                     "embeds": [embed.url for embed in message.embeds],
                     "reactions": [
