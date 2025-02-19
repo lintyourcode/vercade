@@ -96,6 +96,7 @@ class Agent:
                 task=query,
                 llm=ChatLiteLLM(model=self._fast_llm),
                 generate_gif=False,
+                use_vision=False,
                 browser_context=BrowserContext(browser=context),
             ).run()
         return result.final_result() or "No results found"
