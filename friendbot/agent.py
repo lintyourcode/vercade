@@ -7,7 +7,6 @@ import re
 from typing import Any, Dict, List, Optional
 
 from browser_use import Agent as BrowserAgent, Browser, BrowserConfig
-from browser_use.browser.context import BrowserContext
 from langchain_community.chat_models import ChatLiteLLM
 from litellm import ChatCompletionMessageToolCall, completion, embedding, moderation
 import pinecone
@@ -97,7 +96,7 @@ class Agent:
                 llm=ChatLiteLLM(model=self._fast_llm),
                 generate_gif=False,
                 use_vision=False,
-                browser_context=BrowserContext(browser=context),
+                browser_context=context,
             ).run()
         return result.final_result() or "No results found"
 
