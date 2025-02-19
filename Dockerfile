@@ -14,9 +14,9 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
 
-COPY . .
-
 RUN poetry run playwright install chromium
 RUN poetry run playwright install-deps chromium
+
+COPY . .
 
 CMD ["poetry", "run", "xvfb-run", "-a", "python", "-m", "friendbot"]
