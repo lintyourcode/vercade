@@ -240,7 +240,12 @@ class Agent:
                     "description": "Search the web for information. Useful for finding up-to-date context or niche information.",
                     "parameters": {
                         "type": "object",
-                        "properties": {"query": {"type": "string"}},
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "1-3 complete sentences describing the information you're looking for and why, including any relevant context.",
+                            }
+                        },
                         "required": ["query"],
                     },
                 },
