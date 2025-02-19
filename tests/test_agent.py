@@ -136,7 +136,7 @@ class TestFriend:
             author="Bob#0000",
         )
         social_media.messages = AsyncMock(return_value=[message])
-        with Agent(
+        async with Agent(
             name="Proctor",
             identity="You are Proctor, a sentient, smart and snarky Discord chatbot.",
             llm=llm,
