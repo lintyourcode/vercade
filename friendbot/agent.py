@@ -15,7 +15,7 @@ from friendbot.social_media import Message, MessageContext, SocialMedia
 
 
 # TODO: Make social media-specific
-_USER_MESSAGE_TEMPLATE = "You received a message in the Discord server {server}'s channel #{channel}. The current date and time is {date_time}. You may use any tools available to you, or do nothing at all. The user cannot see your responses directly, so you must use the tools if you would like to respond to the user."
+_USER_MESSAGE_TEMPLATE = "{event} The current date and time is {date_time}. You may use any tools available to you, or do nothing at all. The user cannot see your responses directly, so you must use the tools if you would like to respond to the user."
 
 
 class Agent:
@@ -405,7 +405,7 @@ class Agent:
             "content": result,
         }
 
-    async def __call__(self, context: MessageContext) -> None:
+    async def __call__(self, event: str, social_media: SocialMedia) -> None:
         """
         Respond to recent messages in the provided conversation.
 
@@ -415,13 +415,9 @@ class Agent:
 
         functions = {
             "search_web": self._search_web,
-            "send_message": partial(
-                self._send_message, social_media=context.social_media
-            ),
-            "react": partial(self._react, social_media=context.social_media),
-            "read_messages": partial(
-                self._read_messages, social_media=context.social_media
-            ),
+            "send_message": partial(self._send_message, social_media=social_media),
+            "react": partial(self._react, social_media=social_media),
+            "read_messages": partial(self._read_messages, social_media=social_media),
             "get_memories": self._get_memories,
             "save_memory": self._save_memory,
         }
@@ -435,8 +431,7 @@ class Agent:
             {
                 "role": "user",
                 "content": _USER_MESSAGE_TEMPLATE.format(
-                    server=context.server,
-                    channel=context.channel,
+                    event=event,
                     date_time=datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z"),
                 ),
             },

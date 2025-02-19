@@ -30,7 +30,10 @@ class Trigger:
         if len(messages) > 0 and not self._should_respond(messages[0]):
             return
 
-        await self._agent(context)
+        await self._agent(
+            f"You received a message in the Discord server {context.server}'s channel #{context.channel}.",
+            social_media=context.social_media,
+        )
 
     async def connect(self) -> None:
         """

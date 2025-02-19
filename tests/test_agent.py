@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, Mock, ANY
 from litellm import completion
 
 from friendbot.agent import Agent
-from friendbot.social_media import Message, MessageContext, SocialMedia
+from friendbot.social_media import Message, SocialMedia
 
 
 MODELS = ["gpt-4o", "anthropic/claude-3-5-sonnet-latest"]
@@ -81,7 +81,6 @@ class TestFriend:
                 )
             ]
         )
-        context = MessageContext(social_media, "Test Server", "general")
         async with Agent(
             name="Proctor",
             identity="You are Proctor, a sentient, smart and snarky Discord chatbot.",
@@ -90,7 +89,10 @@ class TestFriend:
             pinecone_index=pinecone_index,
             embedding_model="text-embedding-3-small",
         ) as friend:
-            await friend(context)
+            await friend(
+                "You received a message in the Discord server Test Server's channel #general.",
+                social_media,
+            )
         # TODO: Assert that the message is sent to the correct server.
         # TODO: Assert that the message is sent to the correct channel.
         # TODO: Assert that the message is sent to the correct author.
@@ -104,9 +106,6 @@ class TestFriend:
     async def test__call__with_greeting_responds_with_nonempty_message(
         self, social_media, llm, fast_llm, pinecone_index
     ):
-        context = MessageContext(
-            social_media=social_media, server="Test Server", channel="general"
-        )
         social_media.messages = AsyncMock(
             return_value=[Message(content="Hello, Proctor", author="Bob#0000")]
         )
@@ -117,7 +116,10 @@ class TestFriend:
             pinecone_index=pinecone_index,
             embedding_model="text-embedding-3-small",
         ) as friend:
-            await friend(context)
+            await friend(
+                "You received a message in the Discord server Test Server's channel #general.",
+                social_media,
+            )
         social_media.send.assert_called_once()
         assert social_media.send.call_args[0][0].server == "Test Server"
         assert social_media.send.call_args[0][0].channel == "general"
@@ -130,7 +132,6 @@ class TestFriend:
     async def test__call__reacts_to_message(
         self, social_media, llm, fast_llm, pinecone_index
     ):
-        context = MessageContext(social_media, "Test Server", "general")
         message = Message(
             content="Please react to this message with a thumbs up",
             author="Bob#0000",
@@ -143,7 +144,10 @@ class TestFriend:
             pinecone_index=pinecone_index,
             embedding_model="text-embedding-3-small",
         ) as friend:
-            await friend(context)
+            await friend(
+                "You received a message in the Discord server Test Server's channel #general.",
+                social_media,
+            )
         social_media.react.assert_called_once_with(ANY, ANY, "👍")
         assert social_media.react.call_args[0][0].server == "Test Server"
         assert social_media.react.call_args[0][0].channel == "general"
@@ -161,7 +165,6 @@ class TestFriend:
         datetime.now = Mock(
             return_value=Mock(strftime=Mock(return_value="2024-08-01 00:00:00 UTC"))
         )
-        context = MessageContext(social_media, "Test Server", "general")
         message = Message(content="Hello, Proctor. I'm Bob.", author="Bob#0000")
         social_media.messages = AsyncMock(return_value=[message])
         async with Agent(
@@ -171,7 +174,10 @@ class TestFriend:
             pinecone_index=pinecone_index,
             embedding_model="text-embedding-3-small",
         ) as friend:
-            await friend(context)
+            await friend(
+                "You received a message in the Discord server Test Server's channel #general.",
+                social_media,
+            )
         pinecone_index.upsert.assert_called_with(
             vectors=[
                 (
@@ -202,7 +208,6 @@ class TestFriend:
                 ]
             }
         )
-        context = MessageContext(social_media, "Test Server", "general")
         message = Message(
             content="Hello, Proctor. Do you remember me?", author="Bob#0000"
         )
@@ -214,7 +219,10 @@ class TestFriend:
             pinecone_index=pinecone_index,
             embedding_model="text-embedding-3-small",
         ) as friend:
-            await friend(context)
+            await friend(
+                "You received a message in the Discord server Test Server's channel #general.",
+                social_media,
+            )
         social_media.send.assert_called_once()
         assert match(
             social_media.send.call_args[0][1].content,
@@ -226,7 +234,6 @@ class TestFriend:
     async def test__call__searches_web(
         self, mocker, social_media, llm, fast_llm, pinecone_index
     ):
-        context = MessageContext(social_media, "Test Server", "general")
         message = Message(
             content="What is the weather in Tokyo?", author="Bob#0000"
         )
@@ -239,7 +246,10 @@ class TestFriend:
             pinecone_index=pinecone_index,
             embedding_model="text-embedding-3-small",
         ) as friend:
-            await friend(context)
+            await friend(
+                "You received a message in the Discord server Test Server's channel #general.",
+                social_media,
+            )
         social_media.send.assert_called_once()
         assert match(
             social_media.send.call_args[0][1].content,
