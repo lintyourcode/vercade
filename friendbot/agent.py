@@ -107,6 +107,21 @@ class Agent:
         else:
             return "No results found"
 
+    async def _list_servers(self, input: str, social_media: SocialMedia) -> str:
+        input = self._parse_input(input)
+        if input:
+            return "This tool does not take any arguments"
+        servers = await social_media.servers()
+        return json.dumps([server.name for server in servers])
+
+    async def _list_channels(self, input: str, social_media: SocialMedia) -> str:
+        input = self._parse_input(input)
+        server = input["server"]
+        if not server:
+            return "server must be a non-empty string"
+        channels = await social_media.channels(server)
+        return json.dumps([channel.name for channel in channels])
+
     def _clean_channel(self, channel: str) -> str:
         if channel.startswith("#"):
             channel = channel[1:]
@@ -247,6 +262,35 @@ class Agent:
                             }
                         },
                         "required": ["query"],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "list_servers",
+                    "description": "List all Discord servers you have access to",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {},
+                        "required": [],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "list_channels",
+                    "description": "List all text channels in the current Discord server",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "server": {
+                                "type": "string",
+                                "description": "The name of the Discord server to list channels for",
+                            },
+                        },
+                        "required": ["server"],
                     },
                 },
             },
@@ -418,6 +462,10 @@ class Agent:
             "send_message": partial(self._send_message, social_media=social_media),
             "react": partial(self._react, social_media=social_media),
             "read_messages": partial(self._read_messages, social_media=social_media),
+            "list_servers": partial(self._list_servers, social_media=social_media),
+            "list_channels": partial(
+                self._list_channels, social_media=social_media
+            ),
             "get_memories": self._get_memories,
             "save_memory": self._save_memory,
         }

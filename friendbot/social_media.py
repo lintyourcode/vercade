@@ -3,6 +3,16 @@ from typing import Awaitable, Callable, List
 import re
 
 
+class Server:
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+
+class Channel:
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+
 class Reaction:
     def __init__(self, emoji: str, users: List[str]) -> None:
         self.emoji = emoji
@@ -15,6 +25,7 @@ class Embed:
 
 
 class MessageContext:
+    # TODO: Rename `server` and `channel` to `server_name` and `channel_name`
     def __init__(self, social_media: SocialMedia, server: str, channel: str) -> None:
         self.social_media = social_media
         self.server = server
@@ -67,6 +78,20 @@ class SocialMedia:
         self.on_message_callback: (
             Callable[[MessageContext, Message], Awaitable[None]] | None
         ) = None
+
+    async def servers(self) -> List[Server]:
+        """
+        Get a list of all servers the bot has access to.
+        """
+
+        raise NotImplementedError("Subclasses must implement this method")
+
+    async def channels(self, server_name: str) -> List[Channel]:
+        """
+        Get a list of all channels in a server.
+        """
+
+        raise NotImplementedError("Subclasses must implement this method")
 
     async def messages(
         self, context: MessageContext, limit: int = 100

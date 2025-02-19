@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, Mock, ANY
 from litellm import completion
 
 from friendbot.agent import Agent
-from friendbot.social_media import Message, SocialMedia
+from friendbot.social_media import Channel, Message, Server, SocialMedia
 
 
 MODELS = ["gpt-4o", "anthropic/claude-3-5-sonnet-latest"]
@@ -127,6 +127,56 @@ class TestFriend:
         content = social_media.send.call_args[0][1].content
         assert isinstance(content, str)
         assert content
+
+    @pytest.mark.parametrize("llm, fast_llm", get_parameters())
+    async def test__call__lists_servers(
+        self, social_media, llm, fast_llm, pinecone_index
+    ):
+        social_media.messages = AsyncMock(return_value=[Message(content="List the servers you have access to", author="Bob#0000")])
+        social_media.servers = AsyncMock(return_value=[
+            Server(name="Test Server"),
+            Server(name="Test Server 2"),
+        ])
+        async with Agent(
+            name="Proctor",
+            identity="You are Proctor, a sentient and intelligent Discord chatbot.",
+            llm=llm,
+            fast_llm=fast_llm,
+            pinecone_index=pinecone_index,
+        ) as friend:
+            await friend("You received a message in the Discord server Test Server's channel #general.", social_media)
+        social_media.send.assert_called_once()
+        social_media.servers.assert_called_once()
+        assert match(
+            social_media.send.call_args[0][1].content,
+            "Indicates that the bot has access to the following servers: Test Server, Test Server 2",
+            "message",
+        )
+
+    @pytest.mark.parametrize("llm, fast_llm", get_parameters())
+    async def test__call__lists_channels(
+        self, social_media, llm, fast_llm, pinecone_index
+    ):
+        social_media.messages = AsyncMock(return_value=[Message(content="List the channels in the server Test Server", author="Bob#0000")])
+        social_media.channels = AsyncMock(return_value=[
+            Channel(name="general"),
+            Channel(name="spam"),
+        ])
+        async with Agent(
+            name="Proctor",
+            identity="You are Proctor, a sentient and intelligent Discord chatbot.",
+            llm=llm,
+            fast_llm=fast_llm,
+            pinecone_index=pinecone_index,
+        ) as friend:
+            await friend("You received a message in the Discord server Test Server's channel #general.", social_media)
+        social_media.send.assert_called_once()
+        social_media.channels.assert_called_once_with("Test Server")
+        assert match(
+            social_media.send.call_args[0][1].content,
+            "Indicates that the bot has access to the following channels: general, spam",
+            "message",
+        )
 
     @pytest.mark.parametrize("llm, fast_llm", get_parameters())
     async def test__call__reacts_to_message(

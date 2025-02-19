@@ -5,7 +5,7 @@ from typing import List, Tuple
 import discord
 
 from friendbot.agent import Agent
-from friendbot.social_media import Embed, Message, MessageContext, Reaction, SocialMedia
+from friendbot.social_media import Channel, Embed, Message, MessageContext, Reaction, Server, SocialMedia
 
 
 class DiscordClient(discord.Client, SocialMedia):
@@ -112,6 +112,15 @@ class DiscordClient(discord.Client, SocialMedia):
         async for msg in channel.history(limit=fetch_limit):
             if msg.content == message.content:
                 return msg
+
+    async def servers(self) -> List[Server]:
+        return [Server(guild.name) for guild in self.guilds]
+
+    async def channels(self, server_name: str) -> List[Channel]:
+        guild = discord.utils.get(self.guilds, name=server_name)
+        if not guild:
+            raise ValueError(f"Guild {server_name} not found")
+        return [Channel(channel.name) for channel in guild.text_channels]
 
     async def messages(
         self, context: MessageContext, limit: int = 100
