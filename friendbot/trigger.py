@@ -38,7 +38,7 @@ class Trigger:
             if (not self._response_task or self._response_task.done()) and random.randint(0, 1) == 0:
                 self._response_task = asyncio.create_task(
                     self._agent(
-                        "You're bored, and you're looking for something interesting to do.",
+                        "You are currently idle. If you'd like, you can choose to do something interesting to pass the time.",
                         social_media=social_media,
                     )
                 )

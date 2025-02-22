@@ -1,3 +1,4 @@
+import logging
 import os
 
 import dotenv
@@ -13,6 +14,7 @@ from friendbot.trigger import Trigger
 async def main():
     dotenv.load_dotenv()
     nest_asyncio.apply()
+    logging.getLogger("LiteLLM").setLevel(logging.WARNING)
 
     if not os.getenv("FRIENDBOT_NAME"):
         raise ValueError("FRIENDBOT_NAME environment variable must be set")
