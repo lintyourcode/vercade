@@ -91,9 +91,12 @@ class Trigger:
         if not self._should_respond(message):
             return
 
-        # If we're already working on a response to a previous message, cancel
-        # that and start responding to the new message
+        # If we're already working on a response to a previous message, either
+        # cancel it or continue working on it
         if self._response_task and not self._response_task.done():
-            self._response_task.cancel()
+            if random.randint(0, 1) == 0:
+                self._response_task.cancel()
+            else:
+                return
 
         self._response_task = asyncio.create_task(self._read_message(context, message))
