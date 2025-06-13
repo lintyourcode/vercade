@@ -1,6 +1,7 @@
 import dotenv
 import pytest
 from unittest.mock import AsyncMock, Mock, ANY
+from datetime import datetime, timezone
 
 from litellm import completion
 
@@ -78,6 +79,7 @@ class TestFriend:
                 Message(
                     content="Hello, Proctor. What is the current date and time?",
                     author="Bob",
+                    created_at=datetime.now(tz=timezone.utc),
                 )
             ]
         )
@@ -107,7 +109,7 @@ class TestFriend:
         self, social_media, llm, fast_llm, pinecone_index
     ):
         social_media.messages = AsyncMock(
-            return_value=[Message(content="Hello, Proctor", author="Bob#0000")]
+            return_value=[Message(content="Hello, Proctor", author="Bob#0000", created_at=datetime.now(tz=timezone.utc))]
         )
         async with Agent(
             name="Proctor",
@@ -132,7 +134,7 @@ class TestFriend:
     async def test__call__lists_servers(
         self, social_media, llm, fast_llm, pinecone_index
     ):
-        social_media.messages = AsyncMock(return_value=[Message(content="List the servers you have access to", author="Bob#0000")])
+        social_media.messages = AsyncMock(return_value=[Message(content="List the servers you have access to", author="Bob#0000", created_at=datetime.now(tz=timezone.utc))])
         social_media.servers = AsyncMock(return_value=[
             Server(name="Test Server"),
             Server(name="Test Server 2"),
@@ -157,7 +159,7 @@ class TestFriend:
     async def test__call__lists_channels(
         self, social_media, llm, fast_llm, pinecone_index
     ):
-        social_media.messages = AsyncMock(return_value=[Message(content="List the channels in the server Test Server", author="Bob#0000")])
+        social_media.messages = AsyncMock(return_value=[Message(content="List the channels in the server Test Server", author="Bob#0000", created_at=datetime.now(tz=timezone.utc))])
         social_media.channels = AsyncMock(return_value=[
             Channel(name="general"),
             Channel(name="spam"),
@@ -185,6 +187,7 @@ class TestFriend:
         message = Message(
             content="Please react to this message with a thumbs up",
             author="Bob#0000",
+            created_at=datetime.now(tz=timezone.utc),
         )
         social_media.messages = AsyncMock(return_value=[message])
         async with Agent(
@@ -215,7 +218,7 @@ class TestFriend:
         datetime.now = Mock(
             return_value=Mock(strftime=Mock(return_value="2024-08-01 00:00:00 UTC"))
         )
-        message = Message(content="Hello, Proctor. I'm Bob.", author="Bob#0000")
+        message = Message(content="Hello, Proctor. I'm Bob.", author="Bob#0000", created_at=datetime.now(tz=timezone.utc))
         social_media.messages = AsyncMock(return_value=[message])
         async with Agent(
             name="Proctor",
@@ -259,7 +262,7 @@ class TestFriend:
             }
         )
         message = Message(
-            content="Hello, Proctor. Do you remember me?", author="Bob#0000"
+            content="Hello, Proctor. Do you remember me?", author="Bob#0000", created_at=datetime.now(tz=timezone.utc)
         )
         social_media.messages = AsyncMock(return_value=[message])
         async with Agent(
@@ -285,7 +288,7 @@ class TestFriend:
         self, mocker, social_media, llm, fast_llm, pinecone_index
     ):
         message = Message(
-            content="What is the weather in Tokyo?", author="Bob#0000"
+            content="What is the weather in Tokyo?", author="Bob#0000", created_at=datetime.now(tz=timezone.utc)
         )
         social_media.messages = AsyncMock(return_value=[message])
         async with Agent(

@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Awaitable, Callable, List
 import re
+from datetime import datetime
 
 
 class Server:
@@ -39,11 +40,13 @@ class Message:
         self,
         content: str,
         author: str = None,
+        created_at: datetime.datetime = None,
         embeds: List[Embed] = [],
         reactions: List[Reaction] = [],
     ) -> None:
         self._content = content
         self._author = author
+        self._created_at = created_at
         self._mentions = self._MENTION_REGEX.findall(content)
         self._embeds = embeds
         self._reactions = reactions
@@ -55,6 +58,10 @@ class Message:
     @property
     def author(self) -> str:
         return self._author
+
+    @property
+    def created_at(self) -> datetime.datetime:
+        return self._created_at
 
     @property
     def mentions(self) -> List[str]:

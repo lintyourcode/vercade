@@ -139,6 +139,7 @@ class Agent:
                 {
                     "author": message.author,
                     "content": message.content,
+                    "created_at": message.created_at.strftime("%Y-%m-%d %H:%M:%S %Z"),
                     "embeds": [embed.url for embed in message.embeds],
                     "reactions": [
                         {

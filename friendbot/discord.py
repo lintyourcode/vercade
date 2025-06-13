@@ -43,6 +43,7 @@ class DiscordClient(discord.Client, SocialMedia):
         return Message(
             content=content,
             author=message.author.name,
+            created_at=message.created_at,
             embeds=[Embed(url=embed.url) for embed in message.embeds],
             reactions=reactions,
         )
