@@ -32,6 +32,7 @@ class Agent:
         fast_llm: Optional[str] = None,
         embedding_model: Optional[str] = None,
         temperature: Optional[float] = None,
+        reasoning_effort: Optional[str] = None,
         mcp_client: Optional[fastmcp.Client] = None,
     ) -> None:
         """
@@ -47,6 +48,7 @@ class Agent:
             fast_llm: Smaller, faster LLM to use for simple tasks.
             embedding_model: Embedding model to use for the agent.
             temperature: Temperature to use for the agent's LLM.
+            reasoning_effort: LiteLLM reasoning effort for the agent (e.g. "low", "medium", "high").
         """
 
         if not identity:
@@ -67,6 +69,7 @@ class Agent:
         self._temperature = temperature
         self._mcp_client = mcp_client
         self._tools = None
+        self._reasoning_effort = reasoning_effort
 
     async def _mcp_tool(self, tool_name: str, input: str) -> str:
         if not self._mcp_client:
@@ -473,6 +476,7 @@ class Agent:
                     temperature=self._temperature,
                     messages=chat_history,
                     tools=await self._get_tools(),
+                    reasoning_effort=self._reasoning_effort,
                 )
                 .choices[0]
                 .message

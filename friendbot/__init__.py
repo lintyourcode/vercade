@@ -79,6 +79,7 @@ async def main():
                 "FRIENDBOT_EMBEDDING_MODEL", "text-embedding-3-small"
             ),
             temperature=temperature,
+            reasoning_effort=os.getenv("FRIENDBOT_LLM_REASONING_EFFORT"),
             mcp_client=mcp_client,
         )
         # TODO: Rename `proctor` to `discord`
