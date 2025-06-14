@@ -6,9 +6,7 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
-from browser_use import Agent as BrowserAgent, Browser, BrowserConfig
 import fastmcp
-from langchain_community.chat_models import ChatLiteLLM
 from litellm import ChatCompletionMessageToolCall, completion, embedding, moderation
 import pinecone
 
@@ -64,7 +62,6 @@ class Agent:
         self._embedding_model = embedding_model or os.getenv(
             "FRIENDBOT_EMBEDDING_MODEL"
         )
-        self._browser = None
         self._mcp_client = mcp_client
         self._tools = None
 
@@ -78,42 +75,11 @@ class Agent:
             return f"Error calling tool {tool_name}: {e}"
         return "\n".join([block.text for block in result])
 
-    async def __aenter__(self):
-        self._browser = Browser(config=BrowserConfig(headless=True))
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if self._browser:
-            await self._browser.close()
-            self._browser = None
-
     def _parse_input(self, input: str) -> Dict[str, Any]:
         try:
             return json.loads(input)
         except json.JSONDecodeError:
             return {"content": input}
-
-    async def _search_web(self, input: str) -> str:
-        input = self._parse_input(input)
-        query = input.get("query")
-        if not query:
-            return "query must be a non-empty string"
-        async with await self._browser.new_context() as context:
-            result = await BrowserAgent(
-                task=query,
-                llm=ChatLiteLLM(model=self._fast_llm),
-                generate_gif=False,
-                use_vision=False,
-                browser_context=context,
-            ).run()
-        if result.final_result():
-            response = result.final_result()
-            if result.urls():
-                sources = "\n".join(["- " + url for url in result.urls()])
-                response += f"\n\nSources:\n{sources}"
-            return response
-        else:
-            return "No results found"
 
     async def _list_servers(self, input: str, social_media: SocialMedia) -> str:
         input = self._parse_input(input)
@@ -271,23 +237,6 @@ class Agent:
                 for tool in await self._mcp_client.list_tools()
             ])
         self._tools.extend([
-            {
-                "type": "function",
-                "function": {
-                    "name": "search_web",
-                    "description": "Search the web for information. Useful for finding up-to-date context or niche information.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "query": {
-                                "type": "string",
-                                "description": "1-3 complete sentences describing the information you're looking for and why, including any relevant context.",
-                            }
-                        },
-                        "required": ["query"],
-                    },
-                },
-            },
             {
                 "type": "function",
                 "function": {
@@ -488,7 +437,6 @@ class Agent:
                 for tool in await self._mcp_client.list_tools()
             })
         functions.update({
-            "search_web": self._search_web,
             "send_message": partial(self._send_message, social_media=social_media),
             "react": partial(self._react, social_media=social_media),
             "read_messages": partial(self._read_messages, social_media=social_media),

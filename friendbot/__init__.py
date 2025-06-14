@@ -62,19 +62,20 @@ async def main():
     else:
         mcp_client = None
 
-    # TODO: Rename `friend` to `agent`
-    async with mcp_client, Agent(
-        name=name,
-        identity=identity,
-        moderate_messages=os.getenv("FRIENDBOT_MODERATE_MESSAGES"),
-        llm=llm,
-        fast_llm=fast_llm,
-        pinecone_index=pinecone.Index(index_name),
-        embedding_model=os.getenv(
-            "FRIENDBOT_EMBEDDING_MODEL", "text-embedding-3-small"
-        ),
-        mcp_client=mcp_client,
-    ) as friend:
+    async with mcp_client:
+        # TODO: Rename `friend` to `agent`
+        friend = Agent(
+            name=name,
+            identity=identity,
+            moderate_messages=os.getenv("FRIENDBOT_MODERATE_MESSAGES"),
+            llm=llm,
+            fast_llm=fast_llm,
+            pinecone_index=pinecone.Index(index_name),
+            embedding_model=os.getenv(
+                "FRIENDBOT_EMBEDDING_MODEL", "text-embedding-3-small"
+            ),
+            mcp_client=mcp_client
+        )
         # TODO: Rename `proctor` to `discord`
         proctor = DiscordClient(friend=friend)
         Trigger(proctor, friend)

@@ -7,7 +7,6 @@ Friendbot is an LLM Discord bot that can:
 * :white_check_mark: Adopt a personality
 * :white_check_mark: Respond to messages
 * :white_check_mark: React to messages with emojis
-* :white_check_mark: Search the internet
 * :white_check_mark: Store memories
 * :white_check_mark: Use MCP servers
 * :white_check_mark: Optionally moderate messages
@@ -30,7 +29,6 @@ Clone this repo and run:
 
 ```sh
 poetry install
-poetry run playwright install
 cp template.env .env
 $EDITOR .env
 ```
