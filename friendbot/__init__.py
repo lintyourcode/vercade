@@ -1,5 +1,7 @@
 import logging
 import os
+import json
+import fastmcp
 
 import dotenv
 import nest_asyncio
@@ -53,8 +55,15 @@ async def main():
                 region=os.getenv("PINECONE_REGION", "us-west-2"),
             ),
         )
+
+    if os.getenv("MCP_PATH"):
+        with open(os.getenv("MCP_PATH")) as f:
+            mcp_client = fastmcp.Client(json.load(f))
+    else:
+        mcp_client = None
+
     # TODO: Rename `friend` to `agent`
-    async with Agent(
+    async with mcp_client, Agent(
         name=name,
         identity=identity,
         moderate_messages=os.getenv("FRIENDBOT_MODERATE_MESSAGES"),
@@ -64,6 +73,7 @@ async def main():
         embedding_model=os.getenv(
             "FRIENDBOT_EMBEDDING_MODEL", "text-embedding-3-small"
         ),
+        mcp_client=mcp_client,
     ) as friend:
         # TODO: Rename `proctor` to `discord`
         proctor = DiscordClient(friend=friend)

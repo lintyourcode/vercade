@@ -9,6 +9,7 @@ Friendbot is an LLM Discord bot that can:
 * :white_check_mark: React to messages with emojis
 * :white_check_mark: Search the internet
 * :white_check_mark: Store memories
+* :white_check_mark: Use MCP servers
 * :white_check_mark: Optionally moderate messages
 
 ## Quick start
@@ -74,6 +75,31 @@ All [LiteLLM](https://docs.litellm.ai/docs/providers) models are supported.
 * The `FRIENDBOT_LLM` environment variable is used to configure the bot's intelligent language model for complex tasks.
 * The `FRIENDBOT_FAST_LLM` environment variable is used to configure the bot's fast language model for simple tasks.
 * The `FRIENDBOT_EMBEDDING_MODEL` environment variable is used to configure the bot's embedding model.
+
+### MCP Servers
+
+The `MCP_PATH` environment variable is used to configure the bot's MCP servers. It should be the path to a Claude MCP JSON config file.
+
+```
+MCP_PATH=mcp.json
+```
+
+**mcp.json**
+
+```json
+{
+  "mcpServers": {
+    "youtube": {
+      "command": "npx",
+      "args": ["-y", "youtube-data-mcp-server"],
+      "env": {
+        "YOUTUBE_API_KEY": "YOUR_API_KEY_HERE",
+        "YOUTUBE_TRANSCRIPT_LANG": "en"
+      }
+    }
+  }
+}
+```
 
 ### Moderation
 

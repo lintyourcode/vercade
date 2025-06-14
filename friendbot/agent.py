@@ -7,6 +7,7 @@ import re
 from typing import Any, Dict, List, Optional
 
 from browser_use import Agent as BrowserAgent, Browser, BrowserConfig
+import fastmcp
 from langchain_community.chat_models import ChatLiteLLM
 from litellm import ChatCompletionMessageToolCall, completion, embedding, moderation
 import pinecone
@@ -32,6 +33,7 @@ class Agent:
         llm: Optional[str] = None,
         fast_llm: Optional[str] = None,
         embedding_model: Optional[str] = None,
+        mcp_client: Optional[fastmcp.Client] = None,
     ) -> None:
         """
         Initialize the agent.
@@ -63,6 +65,18 @@ class Agent:
             "FRIENDBOT_EMBEDDING_MODEL"
         )
         self._browser = None
+        self._mcp_client = mcp_client
+        self._tools = None
+
+    async def _mcp_tool(self, tool_name: str, input: str) -> str:
+        if not self._mcp_client:
+            raise ValueError("No MCP client provided")
+        input = self._parse_input(input)
+        try:
+            result = await self._mcp_client.call_tool(tool_name, input)
+        except Exception as e:
+            return f"Error calling tool {tool_name}: {e}"
+        return "\n".join([block.text for block in result])
 
     async def __aenter__(self):
         self._browser = Browser(config=BrowserConfig(headless=True))
@@ -240,9 +254,23 @@ class Agent:
             }
         )
 
-    @property
-    def _tools(self) -> List[Dict[str, Any]]:
-        return [
+    async def _get_tools(self) -> List[Dict[str, Any]]:
+        if self._tools is not None:
+            return self._tools
+        self._tools = []
+        if self._mcp_client:
+            self._tools.extend([
+                {
+                    "type": "function",
+                    "function": {
+                        "name": tool.name,
+                        "description": tool.description,
+                        "parameters": tool.inputSchema,
+                    },
+                }
+                for tool in await self._mcp_client.list_tools()
+            ])
+        self._tools.extend([
             {
                 "type": "function",
                 "function": {
@@ -418,7 +446,8 @@ class Agent:
                     },
                 },
             },
-        ]
+        ])
+        return self._tools
 
     async def _run_tool(
         self, tool_call: ChatCompletionMessageToolCall, functions: Dict[str, Any]
@@ -452,7 +481,13 @@ class Agent:
             context: Conversation context.
         """
 
-        functions = {
+        functions = {}
+        if self._mcp_client:
+            functions.update({
+                tool.name: partial(self._mcp_tool, tool.name)
+                for tool in await self._mcp_client.list_tools()
+            })
+        functions.update({
             "search_web": self._search_web,
             "send_message": partial(self._send_message, social_media=social_media),
             "react": partial(self._react, social_media=social_media),
@@ -463,7 +498,7 @@ class Agent:
             ),
             "get_memories": self._get_memories,
             "save_memory": self._save_memory,
-        }
+        })
 
         # Conversation with LLM
         chat_history = [
@@ -486,7 +521,7 @@ class Agent:
                     model=self._llm,
                     temperature=0.9,
                     messages=chat_history,
-                    tools=self._tools,
+                    tools=await self._get_tools(),
                 )
                 .choices[0]
                 .message
