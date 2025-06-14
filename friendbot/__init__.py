@@ -39,8 +39,7 @@ async def main():
     fast_llm = os.getenv("FRIENDBOT_FAST_LLM")
 
     temperature = os.getenv("FRIENDBOT_LLM_TEMPERATURE")
-    if temperature is not None:
-        temperature = float(temperature)
+    temperature = float(temperature) if temperature else None
 
     if not os.getenv("PINECONE_API_KEY"):
         raise ValueError("PINECONE_API_KEY environment variable must be set")
