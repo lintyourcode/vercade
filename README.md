@@ -71,6 +71,7 @@ More complex identities generally result in more interesting responses.
 All [LiteLLM](https://docs.litellm.ai/docs/providers) models are supported.
 
 * The `FRIENDBOT_LLM` environment variable is used to configure the bot's intelligent language model for complex tasks.
+  * The `FRIENDBOT_LLM_TEMPERATURE` environment variable is used to configure this LLM's temperature.
 * The `FRIENDBOT_FAST_LLM` environment variable is used to configure the bot's fast language model for simple tasks.
 * The `FRIENDBOT_EMBEDDING_MODEL` environment variable is used to configure the bot's embedding model.
 

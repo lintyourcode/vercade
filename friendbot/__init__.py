@@ -38,6 +38,10 @@ async def main():
         raise ValueError("FRIENDBOT_FAST_LLM environment variable must be set")
     fast_llm = os.getenv("FRIENDBOT_FAST_LLM")
 
+    temperature = os.getenv("FRIENDBOT_LLM_TEMPERATURE")
+    if temperature is not None:
+        temperature = float(temperature)
+
     if not os.getenv("PINECONE_API_KEY"):
         raise ValueError("PINECONE_API_KEY environment variable must be set")
     if not os.getenv("PINECONE_INDEX_NAME"):
@@ -74,7 +78,8 @@ async def main():
             embedding_model=os.getenv(
                 "FRIENDBOT_EMBEDDING_MODEL", "text-embedding-3-small"
             ),
-            mcp_client=mcp_client
+            temperature=temperature,
+            mcp_client=mcp_client,
         )
         # TODO: Rename `proctor` to `discord`
         proctor = DiscordClient(friend=friend)

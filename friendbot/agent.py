@@ -31,6 +31,7 @@ class Agent:
         llm: Optional[str] = None,
         fast_llm: Optional[str] = None,
         embedding_model: Optional[str] = None,
+        temperature: Optional[float] = None,
         mcp_client: Optional[fastmcp.Client] = None,
     ) -> None:
         """
@@ -45,6 +46,7 @@ class Agent:
             llm: LLM to use for the agent.
             fast_llm: Smaller, faster LLM to use for simple tasks.
             embedding_model: Embedding model to use for the agent.
+            temperature: Temperature to use for the agent's LLM.
         """
 
         if not identity:
@@ -62,6 +64,7 @@ class Agent:
         self._embedding_model = embedding_model or os.getenv(
             "FRIENDBOT_EMBEDDING_MODEL"
         )
+        self._temperature = temperature
         self._mcp_client = mcp_client
         self._tools = None
 
@@ -467,7 +470,7 @@ class Agent:
             response = (
                 completion(
                     model=self._llm,
-                    temperature=0.9,
+                    temperature=self._temperature,
                     messages=chat_history,
                     tools=await self._get_tools(),
                 )
