@@ -17,7 +17,14 @@ from friendbot.social_media import (
 
 
 class DiscordClient(discord.Client, SocialMedia):
-    def __init__(self, *, friend: Agent = None, loop=None, **options) -> None:
+    def __init__(
+        self,
+        *,
+        activity: discord.Activity | None = None,
+        friend: Agent = None,
+        loop=None,
+        **options,
+    ) -> None:
         intents = discord.Intents.default()
         intents.members = True
         discord.Client.__init__(self, loop=loop, intents=intents, **options)
@@ -27,6 +34,7 @@ class DiscordClient(discord.Client, SocialMedia):
             raise ValueError("please provide a Friend instance")
 
         self._respond_task = None
+        self._activity = activity
         self._agent = friend
 
     async def _discord_message_to_message(self, message: discord.Message) -> Message:
@@ -68,6 +76,9 @@ class DiscordClient(discord.Client, SocialMedia):
             raise ValueError(
                 f"Friend name {self._agent.name} does not match Discord bot name {self.user.name}"
             )
+
+        if self._activity:
+            await self.change_presence(activity=self._activity)
 
         if self.on_ready_callback:
             await self.on_ready_callback()

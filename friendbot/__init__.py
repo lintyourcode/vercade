@@ -3,6 +3,7 @@ import os
 import json
 import fastmcp
 
+from discord import CustomActivity
 import dotenv
 import nest_asyncio
 from pinecone.grpc import PineconeGRPC as Pinecone
@@ -25,6 +26,10 @@ async def main():
     if not os.getenv("FRIENDBOT_IDENTITY"):
         raise ValueError("FRIENDBOT_IDENTITY environment variable must be set")
     identity = os.getenv("FRIENDBOT_IDENTITY")
+
+    activity = os.getenv("FRIENDBOT_ACTIVITY")
+    if activity:
+        activity = CustomActivity(name=activity)
 
     if not os.getenv("DISCORD_TOKEN"):
         raise ValueError("DISCORD_TOKEN environment variable must be set")
@@ -84,6 +89,6 @@ async def main():
             mcp_client=mcp_client,
         )
         # TODO: Rename `proctor` to `discord`
-        proctor = DiscordClient(friend=friend)
+        proctor = DiscordClient(activity=activity, friend=friend)
         Trigger(proctor, friend)
         proctor.run(discord_token)

@@ -66,6 +66,14 @@ FRIENDBOT_IDENTITY="You are a funny, intelligent and creative AI Discord user na
 
 More complex identities generally result in more interesting responses.
 
+### Activity
+
+The `FRIENDBOT_ACTIVITY` environment variable can be used to configure the bot's initial presence. It must be a string.
+
+```
+FRIENDBOT_ACTIVITY="Ping me!"
+```
+
 ### Models
 
 All [LiteLLM](https://docs.litellm.ai/docs/providers) models are supported.
