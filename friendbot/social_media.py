@@ -10,7 +10,8 @@ class Server:
 
 
 class Channel:
-    def __init__(self, name: str) -> None:
+    def __init__(self, id: int, name: str) -> None:
+        self.id = id
         self.name = name
 
 
@@ -26,8 +27,10 @@ class Embed:
 
 
 class MessageContext:
-    # TODO: Rename `server` and `channel` to `server_name` and `channel_name`
-    def __init__(self, social_media: SocialMedia, server: str, channel: str) -> None:
+    # TODO: Type `server` as `Server`
+    def __init__(
+        self, social_media: SocialMedia, server: str, channel: Channel
+    ) -> None:
         self.social_media = social_media
         self.server = server
         self.channel = channel

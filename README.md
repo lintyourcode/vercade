@@ -10,7 +10,6 @@ Friendbot is an LLM Discord bot that can:
 * :white_check_mark: Store memories
 * :white_check_mark: Reason
 * :white_check_mark: Use MCP servers
-* :white_check_mark: Optionally moderate messages
 
 ## Quick start
 
@@ -85,29 +84,24 @@ The `MCP_PATH` environment variable is used to configure the bot's MCP servers. 
 MCP_PATH=mcp.json
 ```
 
+**Required MCP Servers:**
+
+* A Discord MCP server ([example](https://github.com/SaseQ/discord-mcp))
+
 **mcp.json**
 
 ```json
 {
   "mcpServers": {
-    "youtube": {
-      "command": "npx",
-      "args": ["-y", "youtube-data-mcp-server"],
+    "discord": {
+      "command": "java",
+      "args": ["-jar", "/path/to/discord-mcp.jar"],
       "env": {
-        "YOUTUBE_API_KEY": "YOUR_API_KEY_HERE",
-        "YOUTUBE_TRANSCRIPT_LANG": "en"
+        "DISCORD_TOKEN": "your_discord_token"
       }
     }
   }
 }
-```
-
-### Moderation
-
-The `FRIENDBOT_MODERATE_MESSAGES` environment variable is used to configure the bot's moderation settings. If set to `true`, the bot will filter out messages that are flagged by the OpenAI moderation API when reading a channel's message history.
-
-```
-FRIENDBOT_MODERATE_MESSAGES=true
 ```
 
 ### Contributing

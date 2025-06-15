@@ -6,10 +6,10 @@ import re
 from typing import Any, Dict, List, Optional
 
 import fastmcp
-from litellm import ChatCompletionMessageToolCall, completion, embedding, moderation
+from litellm import ChatCompletionMessageToolCall, completion, embedding
 import pinecone
 
-from friendbot.social_media import Message, MessageContext, SocialMedia
+from friendbot.social_media import SocialMedia
 
 
 # TODO: Make social media-specific
@@ -26,7 +26,6 @@ class Agent:
         name: str,
         identity: str,
         pinecone_index: pinecone.Index,
-        moderate_messages: bool = True,
         llm: Optional[str] = None,
         fast_llm: Optional[str] = None,
         embedding_model: Optional[str] = None,
@@ -41,8 +40,6 @@ class Agent:
             name: Human-readable name of the agent.
             identity: Natural language description of the agent.
             pinecone_index: Pinecone index for storing memories.
-            moderate_messages: Whether to ignore messages that are flagged as
-                inappropriate.
             llm: LLM to use for the agent.
             fast_llm: Smaller, faster LLM to use for simple tasks.
             embedding_model: Embedding model to use for the agent.
@@ -57,7 +54,6 @@ class Agent:
         self.name = name
         self._identity = identity
         self._pinecone_index = pinecone_index
-        self._moderate_messages = moderate_messages
         self._llm = llm
         self._fast_llm = fast_llm
         self._embedding_model = embedding_model
@@ -81,99 +77,6 @@ class Agent:
             return json.loads(input)
         except json.JSONDecodeError:
             return {"content": input}
-
-    async def _list_servers(self, input: str, social_media: SocialMedia) -> str:
-        input = self._parse_input(input)
-        if input:
-            return "This tool does not take any arguments"
-        servers = await social_media.servers()
-        return json.dumps([server.name for server in servers])
-
-    async def _list_channels(self, input: str, social_media: SocialMedia) -> str:
-        input = self._parse_input(input)
-        server = input["server"]
-        if not server:
-            return "server must be a non-empty string"
-        channels = await social_media.channels(server)
-        return json.dumps([channel.name for channel in channels])
-
-    def _clean_channel(self, channel: str) -> str:
-        if channel.startswith("#"):
-            channel = channel[1:]
-        return channel
-
-    async def _read_messages(self, input: Any, social_media: SocialMedia) -> str:
-        input = self._parse_input(input)
-        server = input["server"]
-        channel = self._clean_channel(input["channel"])
-        try:
-            limit = int(input.get("limit", 20))
-        except ValueError:
-            return "limit must be an integer"
-        context = MessageContext(social_media, server, channel)
-        try:
-            conversation = await social_media.messages(context, limit=limit)
-        except Exception as e:
-            return f"Failed to read messages: {e}"
-        return json.dumps(
-            [
-                {
-                    "author": message.author,
-                    "content": message.content,
-                    "created_at": message.created_at.strftime("%Y-%m-%d %H:%M:%S %Z"),
-                    "embeds": [embed.url for embed in message.embeds],
-                    "reactions": [
-                        {
-                            "emoji": reaction.emoji,
-                            "users": reaction.users,
-                        }
-                        for reaction in message.reactions
-                    ],
-                }
-                for message in conversation
-                if not self._moderate_messages
-                or not moderation(input=message.content).results[0].flagged
-            ]
-        )
-
-    async def _send_message(self, input: str, social_media: SocialMedia) -> str:
-        input = self._parse_input(input)
-        content = input["content"]
-        server = input.get("server")
-        if not server:
-            return "server must be a non-empty string"
-        channel = input.get("channel")
-        if not channel:
-            return "channel must be a non-empty string"
-        channel = self._clean_channel(channel)
-        if not content:
-            return "content must be a non-empty string"
-        message = Message(content=content, author=self.name)
-        try:
-            await social_media.send(
-                MessageContext(social_media, server, channel), message
-            )
-        except Exception as e:
-            return f"Failed to send message: {e}"
-        return "Message sent"
-
-    async def _react(self, input: str, social_media: SocialMedia) -> str:
-        input = self._parse_input(input)
-        server = input["server"]
-        channel = self._clean_channel(input["channel"])
-        message = Message(
-            content=input["message"]["content"], author=input["message"]["author"]
-        )
-        emoji = input["emoji"]
-        if not emoji:
-            return "emoji must be a non-empty string"
-        try:
-            await social_media.react(
-                MessageContext(social_media, server, channel), message, emoji
-            )
-        except Exception as e:
-            return f"Failed to react to message: {e}"
-        return "Reaction added"
 
     def _save_memory(self, input: str) -> str:
         input = self._parse_input(input)
@@ -241,125 +144,6 @@ class Agent:
             )
         self._tools.extend(
             [
-                {
-                    "type": "function",
-                    "function": {
-                        "name": "list_servers",
-                        "description": "List all Discord servers you have access to",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {},
-                            "required": [],
-                        },
-                    },
-                },
-                {
-                    "type": "function",
-                    "function": {
-                        "name": "list_channels",
-                        "description": "List all text channels in the current Discord server",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                                "server": {
-                                    "type": "string",
-                                    "description": "The name of the Discord server to list channels for",
-                                },
-                            },
-                            "required": ["server"],
-                        },
-                    },
-                },
-                {
-                    "type": "function",
-                    "function": {
-                        "name": "send_message",
-                        "description": "Send a message in the current Discord channel. This is the only way to communicate with the user.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                                "server": {
-                                    "type": "string",
-                                    "description": "The name of the Discord server to send the message in",
-                                },
-                                "channel": {
-                                    "type": "string",
-                                    "description": "The name of the Discord channel to send the message in",
-                                },
-                                "content": {
-                                    "type": "string",
-                                    "description": "The markdown content of the message",
-                                },
-                            },
-                            "required": ["server", "channel", "content"],
-                        },
-                    },
-                },
-                {
-                    "type": "function",
-                    "function": {
-                        "name": "react",
-                        "description": "React to a Discord message with an emoji",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                                "server": {
-                                    "type": "string",
-                                    "description": "The name of the Discord server to react in",
-                                },
-                                "channel": {
-                                    "type": "string",
-                                    "description": "The name of the Discord channel to react in",
-                                },
-                                "message": {
-                                    "type": "object",
-                                    "properties": {
-                                        "content": {
-                                            "type": "string",
-                                            "description": "The content of the message to react to",
-                                        },
-                                        "author": {
-                                            "type": "string",
-                                            "description": "The author of the message to react to",
-                                        },
-                                    },
-                                    "required": ["content", "author"],
-                                },
-                                "emoji": {
-                                    "type": "string",
-                                    "description": "The emoji to react with",
-                                },
-                            },
-                            "required": ["server", "channel", "message", "emoji"],
-                        },
-                    },
-                },
-                {
-                    "type": "function",
-                    "function": {
-                        "name": "read_messages",
-                        "description": "Read the most recent messages from the current Discord channel. Useful for getting context for the current conversation.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                                "server": {
-                                    "type": "string",
-                                    "description": "The name of the Discord server to read the messages from",
-                                },
-                                "channel": {
-                                    "type": "string",
-                                    "description": "The name of the Discord channel to read the messages from",
-                                },
-                                "limit": {
-                                    "type": "integer",
-                                    "description": "The number of messages to read",
-                                    "default": 20,
-                                },
-                            },
-                            "required": ["server", "channel"],
-                        },
-                    },
-                },
                 {
                     "type": "function",
                     "function": {
@@ -445,15 +229,6 @@ class Agent:
             )
         functions.update(
             {
-                "send_message": partial(self._send_message, social_media=social_media),
-                "react": partial(self._react, social_media=social_media),
-                "read_messages": partial(
-                    self._read_messages, social_media=social_media
-                ),
-                "list_servers": partial(self._list_servers, social_media=social_media),
-                "list_channels": partial(
-                    self._list_channels, social_media=social_media
-                ),
                 "get_memories": self._get_memories,
                 "save_memory": self._save_memory,
             }

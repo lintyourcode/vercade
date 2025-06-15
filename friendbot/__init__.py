@@ -73,7 +73,6 @@ async def main():
         friend = Agent(
             name=name,
             identity=identity,
-            moderate_messages=os.getenv("FRIENDBOT_MODERATE_MESSAGES"),
             llm=llm,
             fast_llm=fast_llm,
             pinecone_index=pinecone.Index(index_name),

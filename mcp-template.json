@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "discord": {
+      "command": "java",
+      "args": ["-jar", "/path/to/discord-mcp.jar"],
+      "env": {
+        "DISCORD_TOKEN": "your_discord_token"
+      }
+    }
+  }
+}

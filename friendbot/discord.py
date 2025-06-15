@@ -91,11 +91,12 @@ class DiscordClient(discord.Client, SocialMedia):
 
     async def on_message(self, message: discord.Message) -> None:
         if self.on_message_callback:
+            channel = Channel(id=message.channel.id, name=message.channel.name)
             await self.on_message_callback(
                 MessageContext(
                     social_media=self,
                     server=message.guild.name,
-                    channel=message.channel.name,
+                    channel=channel,
                 ),
                 await self._discord_message_to_message(message),
             )
@@ -106,9 +107,9 @@ class DiscordClient(discord.Client, SocialMedia):
         guild = discord.utils.get(self.guilds, name=context.server)
         if not guild:
             raise ValueError(f"Guild {context.server} not found")
-        channel = discord.utils.get(guild.text_channels, name=context.channel)
+        channel = discord.utils.get(guild.text_channels, name=context.channel.name)
         if not channel:
-            raise ValueError(f"Channel {context.channel} not found")
+            raise ValueError(f"Channel {context.channel.id} not found")
         return guild, channel
 
     async def _get_message(

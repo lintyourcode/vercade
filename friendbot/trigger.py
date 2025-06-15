@@ -52,7 +52,7 @@ class Trigger:
             return
 
         await self._agent(
-            f"You received a message in the Discord server {context.server}'s channel #{context.channel}.",
+            f"You received a message in the Discord channel with id {context.channel.id}.",
             social_media=context.social_media,
         )
 
