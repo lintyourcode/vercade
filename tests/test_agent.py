@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, Mock, ANY
 from datetime import datetime, timezone
 
 from litellm import completion
+from pinecone import QueryResponse, ScoredVector
 
 from friendbot.agent import Agent
 from friendbot.social_media import Channel, Message, Server, SocialMedia
@@ -56,7 +57,7 @@ def social_media():
 @pytest.fixture
 def pinecone_index():
     pinecone_index = Mock()
-    pinecone_index.query = Mock(return_value={"matches": []})
+    pinecone_index.query = Mock(return_value=QueryResponse(matches=[]))
     pinecone_index.upsert = Mock()
     return pinecone_index
 
@@ -281,9 +282,10 @@ class TestFriend:
         self, social_media, llm, fast_llm, pinecone_index
     ):
         pinecone_index.query = Mock(
-            return_value={
-                "matches": [
-                    Mock(
+            return_value=QueryResponse(
+                matches=[
+                    ScoredVector(
+                        id="1",
                         metadata={
                             "content": "Has met Bob#0000",
                             "created_at": "2024-07-23 00:00:00 UTC",
@@ -291,7 +293,7 @@ class TestFriend:
                         score=0.9,
                     )
                 ]
-            }
+            )
         )
         message = Message(
             content="Hello, Proctor. Do you remember me?",
