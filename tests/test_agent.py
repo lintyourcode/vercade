@@ -299,17 +299,17 @@ class TestFriend:
             created_at=datetime.now(tz=timezone.utc),
         )
         social_media.messages = AsyncMock(return_value=[message])
-        async with Agent(
+        friend = Agent(
             name="Proctor",
             identity="You are Proctor, a sentient and smart Discord chatbot.",
             llm=llm,
             pinecone_index=pinecone_index,
             embedding_model="text-embedding-3-small",
-        ) as friend:
-            await friend(
-                "You received a message in the Discord server Test Server's channel #general.",
-                social_media,
-            )
+        )
+        await friend(
+            "You received a message in the Discord server Test Server's channel #general.",
+            social_media,
+        )
         social_media.send.assert_called_once()
         assert match(
             social_media.send.call_args[0][1].content,
