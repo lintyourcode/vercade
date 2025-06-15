@@ -231,177 +231,181 @@ class Agent:
             return self._tools
         self._tools = []
         if self._mcp_client:
-            self._tools.extend([
+            self._tools.extend(
+                [
+                    {
+                        "type": "function",
+                        "function": {
+                            "name": tool.name,
+                            "description": tool.description,
+                            "parameters": tool.inputSchema,
+                        },
+                    }
+                    for tool in await self._mcp_client.list_tools()
+                ]
+            )
+        self._tools.extend(
+            [
                 {
                     "type": "function",
                     "function": {
-                        "name": tool.name,
-                        "description": tool.description,
-                        "parameters": tool.inputSchema,
-                    },
-                }
-                for tool in await self._mcp_client.list_tools()
-            ])
-        self._tools.extend([
-            {
-                "type": "function",
-                "function": {
-                    "name": "list_servers",
-                    "description": "List all Discord servers you have access to",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {},
-                        "required": [],
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "list_channels",
-                    "description": "List all text channels in the current Discord server",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "server": {
-                                "type": "string",
-                                "description": "The name of the Discord server to list channels for",
-                            },
+                        "name": "list_servers",
+                        "description": "List all Discord servers you have access to",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {},
+                            "required": [],
                         },
-                        "required": ["server"],
                     },
                 },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "send_message",
-                    "description": "Send a message in the current Discord channel. This is the only way to communicate with the user.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "server": {
-                                "type": "string",
-                                "description": "The name of the Discord server to send the message in",
-                            },
-                            "channel": {
-                                "type": "string",
-                                "description": "The name of the Discord channel to send the message in",
-                            },
-                            "content": {
-                                "type": "string",
-                                "description": "The markdown content of the message",
-                            },
-                        },
-                        "required": ["server", "channel", "content"],
-                    },
-                },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "react",
-                    "description": "React to a Discord message with an emoji",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "server": {
-                                "type": "string",
-                                "description": "The name of the Discord server to react in",
-                            },
-                            "channel": {
-                                "type": "string",
-                                "description": "The name of the Discord channel to react in",
-                            },
-                            "message": {
-                                "type": "object",
-                                "properties": {
-                                    "content": {
-                                        "type": "string",
-                                        "description": "The content of the message to react to",
-                                    },
-                                    "author": {
-                                        "type": "string",
-                                        "description": "The author of the message to react to",
-                                    },
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "list_channels",
+                        "description": "List all text channels in the current Discord server",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "server": {
+                                    "type": "string",
+                                    "description": "The name of the Discord server to list channels for",
                                 },
-                                "required": ["content", "author"],
                             },
-                            "emoji": {
-                                "type": "string",
-                                "description": "The emoji to react with",
-                            },
+                            "required": ["server"],
                         },
-                        "required": ["server", "channel", "message", "emoji"],
                     },
                 },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "read_messages",
-                    "description": "Read the most recent messages from the current Discord channel. Useful for getting context for the current conversation.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "server": {
-                                "type": "string",
-                                "description": "The name of the Discord server to read the messages from",
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "send_message",
+                        "description": "Send a message in the current Discord channel. This is the only way to communicate with the user.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "server": {
+                                    "type": "string",
+                                    "description": "The name of the Discord server to send the message in",
+                                },
+                                "channel": {
+                                    "type": "string",
+                                    "description": "The name of the Discord channel to send the message in",
+                                },
+                                "content": {
+                                    "type": "string",
+                                    "description": "The markdown content of the message",
+                                },
                             },
-                            "channel": {
-                                "type": "string",
-                                "description": "The name of the Discord channel to read the messages from",
-                            },
-                            "limit": {
-                                "type": "integer",
-                                "description": "The number of messages to read",
-                                "default": 20,
-                            },
+                            "required": ["server", "channel", "content"],
                         },
-                        "required": ["server", "channel"],
                     },
                 },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_memories",
-                    "description": "Search your memory vector database for memories related to a piece of text. For each person, topic, or idea in every Discord message you receive, search for any memories you've saved about them.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "query": {
-                                "type": "string",
-                                "description": "The word, phrase, or sentence to search for, based on semantic similarity",
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "react",
+                        "description": "React to a Discord message with an emoji",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "server": {
+                                    "type": "string",
+                                    "description": "The name of the Discord server to react in",
+                                },
+                                "channel": {
+                                    "type": "string",
+                                    "description": "The name of the Discord channel to react in",
+                                },
+                                "message": {
+                                    "type": "object",
+                                    "properties": {
+                                        "content": {
+                                            "type": "string",
+                                            "description": "The content of the message to react to",
+                                        },
+                                        "author": {
+                                            "type": "string",
+                                            "description": "The author of the message to react to",
+                                        },
+                                    },
+                                    "required": ["content", "author"],
+                                },
+                                "emoji": {
+                                    "type": "string",
+                                    "description": "The emoji to react with",
+                                },
                             },
-                            "top_k": {
-                                "type": "integer",
-                                "description": "The max number of memories to return",
-                                "default": 10,
-                            },
+                            "required": ["server", "channel", "message", "emoji"],
                         },
-                        "required": ["query"],
                     },
                 },
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "save_memory",
-                    "description": "Save a specific detail to your memory vector database. Make sure to save every detail you notice about other people and your interactions with them, along with anything you say about yourself.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "content": {
-                                "type": "string",
-                                "description": "One or more sentences describing a specific detail to save, including any relevant context.",
-                            }
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "read_messages",
+                        "description": "Read the most recent messages from the current Discord channel. Useful for getting context for the current conversation.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "server": {
+                                    "type": "string",
+                                    "description": "The name of the Discord server to read the messages from",
+                                },
+                                "channel": {
+                                    "type": "string",
+                                    "description": "The name of the Discord channel to read the messages from",
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "description": "The number of messages to read",
+                                    "default": 20,
+                                },
+                            },
+                            "required": ["server", "channel"],
                         },
-                        "required": ["content"],
                     },
                 },
-            },
-        ])
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "get_memories",
+                        "description": "Search your memory vector database for memories related to a piece of text. For each person, topic, or idea in every Discord message you receive, search for any memories you've saved about them.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "query": {
+                                    "type": "string",
+                                    "description": "The word, phrase, or sentence to search for, based on semantic similarity",
+                                },
+                                "top_k": {
+                                    "type": "integer",
+                                    "description": "The max number of memories to return",
+                                    "default": 10,
+                                },
+                            },
+                            "required": ["query"],
+                        },
+                    },
+                },
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "save_memory",
+                        "description": "Save a specific detail to your memory vector database. Make sure to save every detail you notice about other people and your interactions with them, along with anything you say about yourself.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "type": "string",
+                                    "description": "One or more sentences describing a specific detail to save, including any relevant context.",
+                                }
+                            },
+                            "required": ["content"],
+                        },
+                    },
+                },
+            ]
+        )
         return self._tools
 
     async def _run_tool(
@@ -438,21 +442,27 @@ class Agent:
 
         functions = {}
         if self._mcp_client:
-            functions.update({
-                tool.name: partial(self._mcp_tool, tool.name)
-                for tool in await self._mcp_client.list_tools()
-            })
-        functions.update({
-            "send_message": partial(self._send_message, social_media=social_media),
-            "react": partial(self._react, social_media=social_media),
-            "read_messages": partial(self._read_messages, social_media=social_media),
-            "list_servers": partial(self._list_servers, social_media=social_media),
-            "list_channels": partial(
-                self._list_channels, social_media=social_media
-            ),
-            "get_memories": self._get_memories,
-            "save_memory": self._save_memory,
-        })
+            functions.update(
+                {
+                    tool.name: partial(self._mcp_tool, tool.name)
+                    for tool in await self._mcp_client.list_tools()
+                }
+            )
+        functions.update(
+            {
+                "send_message": partial(self._send_message, social_media=social_media),
+                "react": partial(self._react, social_media=social_media),
+                "read_messages": partial(
+                    self._read_messages, social_media=social_media
+                ),
+                "list_servers": partial(self._list_servers, social_media=social_media),
+                "list_channels": partial(
+                    self._list_channels, social_media=social_media
+                ),
+                "get_memories": self._get_memories,
+                "save_memory": self._save_memory,
+            }
+        )
 
         # Conversation with LLM
         chat_history = [
@@ -464,7 +474,9 @@ class Agent:
                 "role": "user",
                 "content": _USER_MESSAGE_TEMPLATE.format(
                     event=event,
-                    date_time=datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z"),
+                    date_time=datetime.now(tz=timezone.utc).strftime(
+                        "%Y-%m-%d %H:%M:%S %Z"
+                    ),
                 ),
             },
         ]

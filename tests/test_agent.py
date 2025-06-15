@@ -21,11 +21,7 @@ def get_parameters() -> list[tuple[str, str]]:
     Return a list of parameters for the tests.
     """
 
-    return [
-        (model, fast_model)
-        for model in MODELS
-        for fast_model in FAST_MODELS
-    ]
+    return [(model, fast_model) for model in MODELS for fast_model in FAST_MODELS]
 
 
 def match(text: str, condition: str, text_type: str = "text") -> bool:
@@ -109,7 +105,13 @@ class TestFriend:
         self, social_media, llm, fast_llm, pinecone_index
     ):
         social_media.messages = AsyncMock(
-            return_value=[Message(content="Hello, Proctor", author="Bob#0000", created_at=datetime.now(tz=timezone.utc))]
+            return_value=[
+                Message(
+                    content="Hello, Proctor",
+                    author="Bob#0000",
+                    created_at=datetime.now(tz=timezone.utc),
+                )
+            ]
         )
         friend = Agent(
             name="Proctor",
@@ -134,11 +136,21 @@ class TestFriend:
     async def test__call__lists_servers(
         self, social_media, llm, fast_llm, pinecone_index
     ):
-        social_media.messages = AsyncMock(return_value=[Message(content="List the servers you have access to", author="Bob#0000", created_at=datetime.now(tz=timezone.utc))])
-        social_media.servers = AsyncMock(return_value=[
-            Server(name="Test Server"),
-            Server(name="Test Server 2"),
-        ])
+        social_media.messages = AsyncMock(
+            return_value=[
+                Message(
+                    content="List the servers you have access to",
+                    author="Bob#0000",
+                    created_at=datetime.now(tz=timezone.utc),
+                )
+            ]
+        )
+        social_media.servers = AsyncMock(
+            return_value=[
+                Server(name="Test Server"),
+                Server(name="Test Server 2"),
+            ]
+        )
         friend = Agent(
             name="Proctor",
             identity="You are Proctor, a sentient and intelligent Discord chatbot.",
@@ -162,11 +174,21 @@ class TestFriend:
     async def test__call__lists_channels(
         self, social_media, llm, fast_llm, pinecone_index
     ):
-        social_media.messages = AsyncMock(return_value=[Message(content="List the channels in the server Test Server", author="Bob#0000", created_at=datetime.now(tz=timezone.utc))])
-        social_media.channels = AsyncMock(return_value=[
-            Channel(name="general"),
-            Channel(name="spam"),
-        ])
+        social_media.messages = AsyncMock(
+            return_value=[
+                Message(
+                    content="List the channels in the server Test Server",
+                    author="Bob#0000",
+                    created_at=datetime.now(tz=timezone.utc),
+                )
+            ]
+        )
+        social_media.channels = AsyncMock(
+            return_value=[
+                Channel(name="general"),
+                Channel(name="spam"),
+            ]
+        )
         friend = Agent(
             name="Proctor",
             identity="You are Proctor, a sentient and intelligent Discord chatbot.",
@@ -224,7 +246,11 @@ class TestFriend:
         datetime.now = Mock(
             return_value=Mock(strftime=Mock(return_value="2024-08-01 00:00:00 UTC"))
         )
-        message = Message(content="Hello, Proctor. I'm Bob.", author="Bob#0000", created_at=datetime.now(tz=timezone.utc))
+        message = Message(
+            content="Hello, Proctor. I'm Bob.",
+            author="Bob#0000",
+            created_at=datetime.now(tz=timezone.utc),
+        )
         social_media.messages = AsyncMock(return_value=[message])
         friend = Agent(
             name="Proctor",
@@ -268,7 +294,9 @@ class TestFriend:
             }
         )
         message = Message(
-            content="Hello, Proctor. Do you remember me?", author="Bob#0000", created_at=datetime.now(tz=timezone.utc)
+            content="Hello, Proctor. Do you remember me?",
+            author="Bob#0000",
+            created_at=datetime.now(tz=timezone.utc),
         )
         social_media.messages = AsyncMock(return_value=[message])
         async with Agent(

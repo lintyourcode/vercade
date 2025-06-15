@@ -5,7 +5,15 @@ from typing import List, Tuple
 import discord
 
 from friendbot.agent import Agent
-from friendbot.social_media import Channel, Embed, Message, MessageContext, Reaction, Server, SocialMedia
+from friendbot.social_media import (
+    Channel,
+    Embed,
+    Message,
+    MessageContext,
+    Reaction,
+    Server,
+    SocialMedia,
+)
 
 
 class DiscordClient(discord.Client, SocialMedia):
