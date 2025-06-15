@@ -48,6 +48,7 @@ class Agent:
             embedding_model: Embedding model to use for the agent.
             temperature: Temperature to use for the agent's LLM.
             reasoning_effort: LiteLLM reasoning effort for the agent (e.g. "low", "medium", "high").
+            mcp_client: FastMCP client with user-provided tools.
         """
 
         if not identity:
