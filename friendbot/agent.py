@@ -2,7 +2,6 @@ import asyncio
 from functools import partial
 from datetime import datetime, timezone
 import json
-import os
 import re
 from typing import Any, Dict, List, Optional
 
@@ -54,18 +53,13 @@ class Agent:
         if not identity:
             raise ValueError("identity must be a non-empty string")
 
-        if os.getenv("OPENAI_API_KEY") is None:
-            raise ValueError("OPENAI_API_KEY environment variable must be set")
-
         self.name = name
         self._identity = identity
         self._pinecone_index = pinecone_index
         self._moderate_messages = moderate_messages
-        self._llm = llm or os.getenv("FRIENDBOT_LLM")
-        self._fast_llm = fast_llm or os.getenv("FRIENDBOT_FAST_LLM")
-        self._embedding_model = embedding_model or os.getenv(
-            "FRIENDBOT_EMBEDDING_MODEL"
-        )
+        self._llm = llm
+        self._fast_llm = fast_llm
+        self._embedding_model = embedding_model
         self._temperature = temperature
         self._mcp_client = mcp_client
         self._tools = None

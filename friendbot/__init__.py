@@ -47,6 +47,9 @@ async def main():
         raise ValueError("PINECONE_INDEX_NAME environment variable must be set")
     index_name = os.getenv("PINECONE_INDEX_NAME")
 
+    if not os.getenv("OPENAI_API_KEY"):
+        raise ValueError("OPENAI_API_KEY environment variable must be set")
+
     pinecone = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
     if index_name not in [index.name for index in pinecone.list_indexes()]:
         pinecone.create_index(
