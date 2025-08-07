@@ -15,7 +15,7 @@ pinecone-client = {version = "5.0.1", extras = ["grpc"]}
 langchain-community = "0.3.14"
 protoc-gen-openapiv2 = "^0.0.1"
 nest-asyncio = "^1.6.0"
-fastmcp = "^2.8.0"
+fastmcp = "^2.11.2"
 
 
 [tool.poetry.group.dev.dependencies]
