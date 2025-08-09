@@ -70,7 +70,11 @@ class Agent:
             result = await self._mcp_client.call_tool(tool_name, input)
         except Exception as e:
             return f"Error calling tool {tool_name}: {e}"
-        return "\n".join([block.text for block in result])
+        # TODO: Support tools that output images or audio
+        output = "\n".join([block.text for block in result.content])
+        if result.is_error:
+            return f"Error calling tool {tool_name}: {output}"
+        return output
 
     def _parse_input(self, input: str) -> Dict[str, Any]:
         try:

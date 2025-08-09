@@ -62,6 +62,7 @@ def pinecone_index():
     return pinecone_index
 
 
+# TODO: Add mcp servers to the tests
 class TestFriend:
     @pytest.mark.parametrize("llm, fast_llm", get_parameters())
     async def test__call__knows_date_and_time(
