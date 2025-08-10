@@ -87,6 +87,9 @@ class Trigger:
         # TODO: Respond to old messages in other contexts
 
     def _remove_response_task(self, context: MessageContext) -> None:
+        if not self._response_tasks.get(context.server, {}).get(context.channel.id):
+            return
+
         del self._response_tasks[context.server][context.channel.id]
         if len(self._response_tasks[context.server]) == 0:
             del self._response_tasks[context.server]
@@ -102,6 +105,8 @@ class Trigger:
 
         if not self._should_respond(message):
             return
+
+        print(f"Response tasks: {self._response_tasks}")
 
         # If we're already working on a response to a previous message in the
         # same channel, cancel it
