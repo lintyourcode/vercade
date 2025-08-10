@@ -1,5 +1,6 @@
 import asyncio
 import random
+import uuid
 from datetime import timedelta
 
 from friendbot.agent import Agent
@@ -12,13 +13,17 @@ SCHEDULE_INTERVAL = timedelta(hours=1)
 class Trigger:
     """
     Trigger for invoking an agent.
+
+    * Runs background tasks on a schedule
+    * Responds to Discord messages (can respond to multiple channels in parallel)
     """
 
     def __init__(self, social_media: SocialMedia, friend: Agent) -> None:
         self._agent = friend
-        # TODO: Rename `response_task` to `trigger_task`
-        self._response_task: asyncio.Task | None = None
+        self._response_tasks: dict[str, dict[str, asyncio.Task]] = {}
+        # TODO: Remove unused `schedule_task`
         self._schedule_task: asyncio.Task | None = None
+        self._scheduled_tasks: dict[str, asyncio.Task] = {}
 
         self._social_media = social_media
         social_media.on_ready_callback = self.connect
@@ -36,11 +41,15 @@ class Trigger:
     async def _run_idle(self, social_media: SocialMedia) -> None:
         while True:
             if random.randint(0, 1) == 0:
-                self._response_task = asyncio.create_task(
+                task_id = str(uuid.uuid4())
+                self._scheduled_tasks[task_id] = asyncio.create_task(
                     self._agent(
                         "You are currently idle. If you'd like, you can choose to do something interesting to pass the time. You may also choose to do nothing at all.",
                         social_media=social_media,
                     )
+                )
+                self._scheduled_tasks[task_id].add_done_callback(
+                    lambda task, task_id=task_id: self._scheduled_tasks.pop(task_id)
                 )
             await asyncio.sleep(SCHEDULE_INTERVAL.total_seconds())
 
@@ -63,7 +72,7 @@ class Trigger:
 
         print("Connected")
 
-        # Start scheduled task
+        # Start scheduler
         self._schedule_task = asyncio.create_task(self._run_idle(self._social_media))
 
     async def _read_message(self, context: MessageContext, message: Message) -> None:
@@ -77,6 +86,11 @@ class Trigger:
 
         # TODO: Respond to old messages in other contexts
 
+    def _remove_response_task(self, context: MessageContext) -> None:
+        del self._response_tasks[context.server][context.channel.id]
+        if len(self._response_tasks[context.server]) == 0:
+            del self._response_tasks[context.server]
+
     async def read_message(self, context: MessageContext, message: Message) -> None:
         """
         Respond to a new message (if appropriate).
@@ -89,8 +103,15 @@ class Trigger:
         if not self._should_respond(message):
             return
 
-        # If we're already working on a response to a previous message, cancel it
-        if self._response_task and not self._response_task.done():
-            self._response_task.cancel()
+        # If we're already working on a response to a previous message in the
+        # same channel, cancel it
+        task = self._response_tasks.get(context.server, {}).get(context.channel.id)
+        if task and not task.done():
+            task.cancel()
+            self._remove_response_task(context)
 
-        self._response_task = asyncio.create_task(self._read_message(context, message))
+        task = asyncio.create_task(self._read_message(context, message))
+        self._response_tasks.setdefault(context.server, {})[context.channel.id] = task
+        task.add_done_callback(
+            lambda task, context=context: self._remove_response_task(context)
+        )
