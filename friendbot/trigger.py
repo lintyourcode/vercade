@@ -35,9 +35,7 @@ class Trigger:
 
     async def _run_idle(self, social_media: SocialMedia) -> None:
         while True:
-            if (
-                not self._response_task or self._response_task.done()
-            ) and random.randint(0, 1) == 0:
+            if random.randint(0, 1) == 0:
                 self._response_task = asyncio.create_task(
                     self._agent(
                         "You are currently idle. If you'd like, you can choose to do something interesting to pass the time. You may also choose to do nothing at all.",
