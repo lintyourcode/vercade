@@ -19,17 +19,29 @@ dotenv.load_dotenv()
 
 
 class QueryResponse:
-    # TODO: Make this behave like pinecone's actual return type (support both item access and attributes)
     def __init__(self, matches: list["ScoredVector"]) -> None:
         self.matches = matches
 
+    def __getitem__(self, key: str):
+        if key == "matches":
+            return self.matches
+        raise KeyError(key)
+
 
 class ScoredVector:
-    # TODO: Make this support dict-style access for score/metadata so Agent can index it like pinecone
     def __init__(self, id: str, metadata: dict[str, Any], score: float) -> None:
         self.id = id
         self.metadata = metadata
         self.score = score
+
+    def __getitem__(self, key: str):
+        if key == "id":
+            return self.id
+        if key == "metadata":
+            return self.metadata
+        if key == "score":
+            return self.score
+        raise KeyError(key)
 
 
 def get_parameters() -> list[tuple[str, str]]:
@@ -73,7 +85,6 @@ def social_media():
 @pytest.fixture
 def pinecone_index():
     pinecone_index = Mock()
-    # TODO: Align this return value to Agent's expectations (dict-like with ["matches"]) to avoid TypeErrors
     pinecone_index.query = Mock(return_value=QueryResponse(matches=[]))
     pinecone_index.upsert = Mock()
     return pinecone_index
@@ -291,7 +302,6 @@ class TestFriend:
             "You received a message in the Discord server Test Server's channel #general.",
             social_media,
         )
-        # TODO: Align pinecone mock's return structure with Agent expectations to avoid brittle assertions
         pinecone_index.upsert.assert_called_with(
             vectors=[
                 (
@@ -309,7 +319,6 @@ class TestFriend:
     async def test__call__retrieves_memory_from_pinecone(
         self, social_media, llm, fast_llm, pinecone_index
     ):
-        # TODO: Provide a dict-like response so Agent's ["matches"] access works without errors
         pinecone_index.query = Mock(
             return_value=QueryResponse(
                 matches=[
