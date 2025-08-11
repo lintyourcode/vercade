@@ -106,8 +106,6 @@ class Trigger:
         if not self._should_respond(message):
             return
 
-        print(f"Response tasks: {self._response_tasks}")
-
         # If we're already working on a response to a previous message in the
         # same channel, cancel it
         task = self._response_tasks.get(context.server, {}).get(context.channel.id)
