@@ -7,7 +7,6 @@ Friendbot is an LLM Discord bot that can:
 * :white_check_mark: Adopt a personality
 * :white_check_mark: Respond to messages
 * :white_check_mark: React to messages with emojis
-* :white_check_mark: Store memories
 * :white_check_mark: Reason
 * :white_check_mark: Use MCP servers
 
@@ -18,10 +17,6 @@ Friendbot is an LLM Discord bot that can:
 1. Create a [Discord bot](https://discord.com/developers/docs/quick-start/getting-started).
 2. Under "Bot", enable the "Message Content Intent" and "Server Members Intent" permissions.
 3. Copy the bot token.
-
-### Pinecone
-
-Create a [Pinecone index](https://docs.pinecone.io/guides/get-started/overview).
 
 ### Installation
 
@@ -82,7 +77,6 @@ All [LiteLLM](https://docs.litellm.ai/docs/providers) models are supported.
   * The `FRIENDBOT_LLM_TEMPERATURE` environment variable is used to configure this LLM's temperature.
   * The `FRIENDBOT_LLM_REASONING_EFFORT` environment variable is used to configure this LLM's reasoning effort (e.g. "low", "medium", "high").
 * The `FRIENDBOT_FAST_LLM` environment variable is used to configure the bot's fast language model for simple tasks.
-* The `FRIENDBOT_EMBEDDING_MODEL` environment variable is used to configure the bot's embedding model.
 
 ### MCP Servers
 

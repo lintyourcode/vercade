@@ -2,12 +2,10 @@ import asyncio
 from functools import partial
 from datetime import datetime, timezone
 import json
-import re
 from typing import Any, Dict, List, Optional
 
 import fastmcp
-from litellm import ChatCompletionMessageToolCall, completion, embedding
-import pinecone
+from litellm import ChatCompletionMessageToolCall, completion
 
 from friendbot.social_media import SocialMedia
 
@@ -25,10 +23,8 @@ class Agent:
         self,
         name: str,
         identity: str,
-        pinecone_index: pinecone.Index,
         llm: Optional[str] = None,
         fast_llm: Optional[str] = None,
-        embedding_model: Optional[str] = None,
         temperature: Optional[float] = None,
         reasoning_effort: Optional[str] = None,
         mcp_client: Optional[fastmcp.Client] = None,
@@ -39,10 +35,8 @@ class Agent:
         Args:
             name: Human-readable name of the agent.
             identity: Natural language description of the agent.
-            pinecone_index: Pinecone index for storing memories.
             llm: LLM to use for the agent.
             fast_llm: Smaller, faster LLM to use for simple tasks.
-            embedding_model: Embedding model to use for the agent.
             temperature: Temperature to use for the agent's LLM.
             reasoning_effort: LiteLLM reasoning effort for the agent (e.g. "low", "medium", "high").
             mcp_client: FastMCP client with user-provided tools.
@@ -53,10 +47,8 @@ class Agent:
 
         self.name = name
         self._identity = identity
-        self._pinecone_index = pinecone_index
         self._llm = llm
         self._fast_llm = fast_llm
-        self._embedding_model = embedding_model
         self._temperature = temperature
         self._mcp_client = mcp_client
         self._tools = None
@@ -82,58 +74,11 @@ class Agent:
         except json.JSONDecodeError:
             return {"content": input}
 
-    def _save_memory(self, input: str) -> str:
-        input = self._parse_input(input)
-        memory = input["content"]
-        if not memory:
-            return "memory must be a non-empty string"
-        id = re.sub(r"[^0-9a-zA-Z]+", "-", memory).replace("-", "").lower()
-        metadata = {
-            "content": memory,
-            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z"),
-        }
-        vector = (
-            embedding(model=self._embedding_model, input=memory)
-            .get("data")[0]
-            .get("embedding")
-        )
-
-        existing_memories = self._pinecone_index.query(vector=vector, top_k=1)[
-            "matches"
-        ]
-        if existing_memories and existing_memories[0]["score"] > 0.75:
-            return "Memory already exists"
-        self._pinecone_index.upsert(vectors=[(id, vector, metadata)])
-        return "Memory saved"
-
-    def _get_memories(self, input: str) -> str:
-        input = self._parse_input(input)
-        query = input.get("query", "")
-        if not query:
-            return "query must be a non-empty string"
-        top_k = input.get("top_k", 10)
-        vector = (
-            embedding(model=self._embedding_model, input=query)
-            .get("data")[0]
-            .get("embedding")
-        )
-        return json.dumps(
-            {
-                "memories": [
-                    memory.metadata
-                    for memory in self._pinecone_index.query(
-                        vector=vector, top_k=top_k, include_metadata=True
-                    )["matches"]
-                ]
-            }
-        )
-
     async def _get_tools(self) -> List[Dict[str, Any]]:
         if self._tools is not None:
             return self._tools
-        self._tools = []
-        if self._mcp_client:
-            self._tools.extend(
+        self._tools = (
+            [
                 [
                     {
                         "type": "function",
@@ -145,49 +90,9 @@ class Agent:
                     }
                     for tool in await self._mcp_client.list_tools()
                 ]
-            )
-        self._tools.extend(
-            [
-                {
-                    "type": "function",
-                    "function": {
-                        "name": "get_memories",
-                        "description": "Search your memory vector database for memories related to a piece of text. For each person, topic, or idea in every Discord message you receive, search for any memories you've saved about them.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                                "query": {
-                                    "type": "string",
-                                    "description": "The word, phrase, or sentence to search for, based on semantic similarity",
-                                },
-                                "top_k": {
-                                    "type": "integer",
-                                    "description": "The max number of memories to return",
-                                    "default": 10,
-                                },
-                            },
-                            "required": ["query"],
-                        },
-                    },
-                },
-                {
-                    "type": "function",
-                    "function": {
-                        "name": "save_memory",
-                        "description": "Save a specific detail to your memory vector database. Make sure to save every detail you notice about other people and your interactions with them, along with anything you say about yourself.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                                "content": {
-                                    "type": "string",
-                                    "description": "One or more sentences describing a specific detail to save, including any relevant context.",
-                                }
-                            },
-                            "required": ["content"],
-                        },
-                    },
-                },
             ]
+            if self._mcp_client
+            else []
         )
         return self._tools
 
@@ -231,12 +136,6 @@ class Agent:
                     for tool in await self._mcp_client.list_tools()
                 }
             )
-        functions.update(
-            {
-                "get_memories": self._get_memories,
-                "save_memory": self._save_memory,
-            }
-        )
 
         # Conversation with LLM
         chat_history = [
