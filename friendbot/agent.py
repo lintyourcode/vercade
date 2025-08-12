@@ -79,17 +79,15 @@ class Agent:
             return self._tools
         self._tools = (
             [
-                [
-                    {
-                        "type": "function",
-                        "function": {
-                            "name": tool.name,
-                            "description": tool.description,
-                            "parameters": tool.inputSchema,
-                        },
-                    }
-                    for tool in await self._mcp_client.list_tools()
-                ]
+                {
+                    "type": "function",
+                    "function": {
+                        "name": tool.name,
+                        "description": tool.description,
+                        "parameters": tool.inputSchema,
+                    },
+                }
+                for tool in await self._mcp_client.list_tools()
             ]
             if self._mcp_client
             else []
