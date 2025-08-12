@@ -78,6 +78,16 @@ All [LiteLLM](https://docs.litellm.ai/docs/providers) models are supported.
   * The `FRIENDBOT_LLM_REASONING_EFFORT` environment variable is used to configure this LLM's reasoning effort (e.g. "low", "medium", "high").
 * The `FRIENDBOT_FAST_LLM` environment variable is used to configure the bot's fast language model for simple tasks.
 
+### Scheduling
+
+Use `FRIENDBOT_SCHEDULE_INTERVAL` to control background, scheduled agent execution. The agent will always respond when messaged regardless of this setting.
+
+- **Default**: `1h` (one hour)
+- **Disable**: set to `off`, `false`, `disabled`, `none`, `no`, or `0`
+- **Formats**:
+  - Plain seconds: `300`
+  - With suffix: `45s`, `15m`, `2h`
+
 ### MCP Servers
 
 The `MCP_PATH` environment variable is used to configure the bot's MCP servers. It should be the path to a Claude MCP JSON config file.

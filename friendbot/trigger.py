@@ -1,13 +1,9 @@
 import asyncio
 import random
 import uuid
-from datetime import timedelta
 
 from friendbot.agent import Agent
 from friendbot.social_media import Message, MessageContext, SocialMedia
-
-
-SCHEDULE_INTERVAL = timedelta(hours=1)
 
 
 class Trigger:
@@ -18,12 +14,19 @@ class Trigger:
     * Responds to Discord messages (can respond to multiple channels in parallel)
     """
 
-    def __init__(self, social_media: SocialMedia, friend: Agent) -> None:
+    def __init__(
+        self,
+        social_media: SocialMedia,
+        friend: Agent,
+        *,
+        schedule_interval_seconds: float | None = 60 * 60,
+    ) -> None:
         self._agent = friend
         self._response_tasks: dict[str, dict[str, asyncio.Task]] = {}
         # TODO: Remove unused `schedule_task`
         self._schedule_task: asyncio.Task | None = None
         self._scheduled_tasks: dict[str, asyncio.Task] = {}
+        self._schedule_interval_seconds = schedule_interval_seconds
 
         self._social_media = social_media
         social_media.on_ready_callback = self.connect
@@ -51,7 +54,7 @@ class Trigger:
                 self._scheduled_tasks[task_id].add_done_callback(
                     lambda task, task_id=task_id: self._scheduled_tasks.pop(task_id)
                 )
-            await asyncio.sleep(SCHEDULE_INTERVAL.total_seconds())
+            await asyncio.sleep(self._schedule_interval_seconds)
 
     async def _respond(self, context: MessageContext) -> None:
         messages = await context.social_media.messages(context, limit=1)
@@ -72,8 +75,11 @@ class Trigger:
 
         print("Connected")
 
-        # Start scheduler
-        self._schedule_task = asyncio.create_task(self._run_idle(self._social_media))
+        # Start scheduler if enabled
+        if self._schedule_interval_seconds and self._schedule_interval_seconds > 0:
+            self._schedule_task = asyncio.create_task(
+                self._run_idle(self._social_media)
+            )
 
     async def _read_message(self, context: MessageContext, message: Message) -> None:
         # Send a few messages

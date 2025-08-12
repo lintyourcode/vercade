@@ -1,6 +1,7 @@
 import logging
 import os
 import json
+import re
 import fastmcp
 
 from discord import CustomActivity
@@ -10,6 +11,46 @@ import nest_asyncio
 from friendbot.agent import Agent
 from friendbot.discord import DiscordClient
 from friendbot.trigger import Trigger
+
+
+def _parse_schedule_interval_seconds(value: str | None) -> float | None:
+    """
+    Parse FRIENDBOT_SCHEDULE_INTERVAL into seconds.
+
+    Supports raw seconds (e.g. "300"), or suffixed values like "15m", "2h", "45s".
+    Disable scheduling with one of: "0", "off", "false", "disabled", "none", "no".
+    Returns None to indicate disabled.
+    """
+
+    if value is None or value.strip() == "":
+        return 60.0 * 60.0
+
+    normalized = value.strip().lower()
+    if normalized in {"0", "off", "false", "disabled", "none", "no"}:
+        return None
+
+    # Plain seconds
+    try:
+        return float(normalized)
+    except ValueError:
+        pass
+
+    match = re.fullmatch(r"(\d+(?:\.\d*)?)([smh])", normalized)
+    if not match:
+        raise ValueError(
+            "FRIENDBOT_SCHEDULE_INTERVAL must be a number of seconds or end with s/m/h (e.g. '300', '15m', '2h', or 'off')"
+        )
+
+    amount = float(match.group(1))
+    unit = match.group(2)
+    if unit == "s":
+        return amount
+    if unit == "m":
+        return amount * 60.0
+    if unit == "h":
+        return amount * 60.0 * 60.0
+    # Should never reach here due to regex
+    raise ValueError("Invalid schedule interval unit")
 
 
 async def main():
@@ -50,6 +91,10 @@ async def main():
     else:
         mcp_client = None
 
+    schedule_interval_seconds = _parse_schedule_interval_seconds(
+        os.getenv("FRIENDBOT_SCHEDULE_INTERVAL")
+    )
+
     async with mcp_client:
         # TODO: Rename `friend` to `agent`
         friend = Agent(
@@ -63,5 +108,5 @@ async def main():
         )
         # TODO: Rename `proctor` to `discord`
         proctor = DiscordClient(activity=activity, friend=friend)
-        Trigger(proctor, friend)
+        Trigger(proctor, friend, schedule_interval_seconds=schedule_interval_seconds)
         proctor.run(discord_token)
