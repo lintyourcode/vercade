@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-RUN apt-get update && apt-get install -y curl git maven openjdk-17-jdk
+RUN apt-get update && apt-get install -y curl git
 
 ENV PYTHONUNBUFFERED 1
 ENV POETRY_VERSION 1.8.3
@@ -16,10 +16,6 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | b
     && ln -s $(command -v npx) /usr/local/bin/npx
 
 WORKDIR /app
-
-RUN git clone https://github.com/SaseQ/discord-mcp.git discord-mcp \
-    && cd discord-mcp \
-    && mvn package
 
 COPY pyproject.toml poetry.lock ./
 
