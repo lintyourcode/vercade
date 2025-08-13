@@ -136,12 +136,6 @@ class TestFriend:
                 )
             ]
         )
-        social_media.servers = AsyncMock(
-            return_value=[
-                Server(name="Test Server"),
-                Server(name="Test Server 2"),
-            ]
-        )
         friend = Agent(
             name="Proctor",
             identity="You are Proctor, a sentient and intelligent Discord chatbot.",
@@ -154,7 +148,6 @@ class TestFriend:
             social_media,
         )
         social_media.send.assert_called_once()
-        social_media.servers.assert_called_once()
         assert match(
             social_media.send.call_args[0][1].content,
             "Indicates that the bot has access to the following servers: Test Server, Test Server 2",
@@ -172,13 +165,6 @@ class TestFriend:
                 )
             ]
         )
-        # TODO: Provide channel ids here to match Channel(id, name) signature
-        social_media.channels = AsyncMock(
-            return_value=[
-                Channel(name="general"),
-                Channel(name="spam"),
-            ]
-        )
         friend = Agent(
             name="Proctor",
             identity="You are Proctor, a sentient and intelligent Discord chatbot.",
@@ -191,7 +177,6 @@ class TestFriend:
             social_media,
         )
         social_media.send.assert_called_once()
-        social_media.channels.assert_called_once_with("Test Server")
         assert match(
             social_media.send.call_args[0][1].content,
             "Indicates that the bot has access to the following channels: general, spam",

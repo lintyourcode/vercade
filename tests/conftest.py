@@ -103,11 +103,13 @@ class LocalDiscordMcp:
 
     async def call_tool(self, name: str, args: dict[str, Any]) -> _McpResult:
         if name == "list_servers":
-            servers = await self._social.servers()
-            return _McpResult([_McpBlock("\n".join([s.name for s in servers]))])
+            # Fake implementation: return a static set of servers
+            servers = ["Test Server", "Test Server 2"]
+            return _McpResult([_McpBlock("\n".join(servers))])
         if name == "list_channels":
-            channels = await self._social.channels(args["server"])  # type: ignore[index]
-            return _McpResult([_McpBlock("\n".join([c.name for c in channels]))])
+            # Fake implementation: return a static set of channels for any server
+            channels = ["general", "spam"]
+            return _McpResult([_McpBlock("\n".join(channels))])
         if name == "get_messages":
             ctx = MessageContext(self._social, args["server"], args["channel"])  # type: ignore[index]
             msgs = await self._social.messages(ctx, limit=int(args.get("limit", 50)))

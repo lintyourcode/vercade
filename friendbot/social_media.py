@@ -89,20 +89,6 @@ class SocialMedia:
             Callable[[MessageContext, Message], Awaitable[None]] | None
         ) = None
 
-    async def servers(self) -> List[Server]:
-        """
-        Get a list of all servers the bot has access to.
-        """
-
-        raise NotImplementedError("Subclasses must implement this method")
-
-    async def channels(self, server_name: str) -> List[Channel]:
-        """
-        Get a list of all channels in a server.
-        """
-
-        raise NotImplementedError("Subclasses must implement this method")
-
     async def messages(
         self, context: MessageContext, limit: int = 100
     ) -> List[Message]:

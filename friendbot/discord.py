@@ -134,18 +134,6 @@ class DiscordClient(discord.Client, SocialMedia):
             if msg.content == message.content:
                 return msg
 
-    # TODO: Remove this unused method
-    async def servers(self) -> List[Server]:
-        return [Server(guild.name) for guild in self.guilds]
-
-    # TODO: Remove this unused method
-    async def channels(self, server_name: str) -> List[Channel]:
-        guild = discord.utils.get(self.guilds, name=server_name)
-        if not guild:
-            raise ValueError(f"Guild {server_name} not found")
-        # TODO: Add channel id here to match Channel(id, name) signature
-        return [Channel(channel.name) for channel in guild.text_channels]
-
     async def messages(
         self, context: MessageContext, limit: int = 100
     ) -> List[Message]:
