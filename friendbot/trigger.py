@@ -81,17 +81,6 @@ class Trigger:
                 self._run_idle(self._social_media)
             )
 
-    async def _read_message(self, context: MessageContext, message: Message) -> None:
-        # Send a few messages
-        await self._respond(context)
-
-        # Sometimes send a follow-up message in a few minutes
-        if random.randint(0, 1) == 0:
-            await asyncio.sleep(4.0 * 60.0 * random.random() + 60.0)
-            await self._respond(context)
-
-        # TODO: Respond to old messages in other contexts
-
     def _remove_response_task(self, context: MessageContext) -> None:
         if not self._response_tasks.get(context.server, {}).get(context.channel.id):
             return
@@ -124,7 +113,7 @@ class Trigger:
                 pass
             self._remove_response_task(context)
 
-        task = asyncio.create_task(self._read_message(context, message))
+        task = asyncio.create_task(self._respond(context))
         self._response_tasks.setdefault(context.server, {})[context.channel.id] = task
         task.add_done_callback(
             lambda task, context=context: self._remove_response_task(context)
