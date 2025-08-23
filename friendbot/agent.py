@@ -154,12 +154,16 @@ class Agent:
         ran_tools = False
         while True:
             response = (
-                completion(
-                    model=self._llm,
-                    temperature=self._temperature,
-                    messages=chat_history,
-                    tools=await self._get_tools(),
-                    reasoning_effort=self._reasoning_effort,
+                (
+                    await asyncio.to_thread(
+                        completion,
+                        model=self._llm,
+                        temperature=self._temperature,
+                        messages=chat_history,
+                        # TODO: Move tool initialization to constructor
+                        tools=await self._get_tools(),
+                        reasoning_effort=self._reasoning_effort,
+                    )
                 )
                 .choices[0]
                 .message
