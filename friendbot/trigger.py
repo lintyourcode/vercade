@@ -117,6 +117,11 @@ class Trigger:
         task = self._response_tasks.get(context.server, {}).get(context.channel.id)
         if task and not task.done():
             task.cancel()
+            # Ensure the task is actually cancelled before proceeding to avoid duplicate sends
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
             self._remove_response_task(context)
 
         task = asyncio.create_task(self._read_message(context, message))
