@@ -1,7 +1,5 @@
 # Friendbot
 
-> If you don't make friends, make enemies.
-
 Friendbot is an LLM Discord bot that can:
 
 * :white_check_mark: Adopt a personality
