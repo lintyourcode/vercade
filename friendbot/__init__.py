@@ -59,12 +59,7 @@ async def main():
 
     log_level = os.getenv("FRIENDBOT_LOG_LEVEL")
     if log_level:
-        log_level = log_level.upper()
-        if log_level not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:
-            raise ValueError(
-                "FRIENDBOT_LOG_LEVEL must be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL"
-            )
-        logging.basicConfig(level=log_level)
+        logging.basicConfig(level=log_level.upper())
     logging.getLogger("LiteLLM").setLevel(logging.WARNING)
 
     if not os.getenv("FRIENDBOT_NAME"):
