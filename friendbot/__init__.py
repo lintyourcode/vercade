@@ -96,8 +96,7 @@ async def main():
     )
 
     async with mcp_client:
-        # TODO: Rename `friend` to `agent`
-        friend = Agent(
+        agent = Agent(
             name=name,
             identity=identity,
             llm=llm,
@@ -106,6 +105,6 @@ async def main():
             mcp_client=mcp_client,
         )
         # TODO: Rename `proctor` to `discord`
-        proctor = DiscordClient(activity=activity, friend=friend)
-        Trigger(proctor, friend, schedule_interval_seconds=schedule_interval_seconds)
+        proctor = DiscordClient(activity=activity, friend=agent)
+        Trigger(proctor, agent, schedule_interval_seconds=schedule_interval_seconds)
         proctor.run(discord_token)
