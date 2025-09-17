@@ -4,7 +4,6 @@ Friendbot is an LLM Discord bot that can:
 
 * :white_check_mark: Adopt a personality
 * :white_check_mark: Respond to messages
-* :white_check_mark: React to messages with emojis
 * :white_check_mark: Reason
 * :white_check_mark: Use MCP servers
 
