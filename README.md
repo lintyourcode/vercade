@@ -1,11 +1,11 @@
 # Friendbot
 
-Friendbot is an LLM Discord bot that can:
+Friendbot is an Discord bot that can:
 
 * :white_check_mark: Adopt a personality
-* :white_check_mark: Respond to messages
+* :white_check_mark: Respond to messages with an LLM
 * :white_check_mark: Reason
-* :white_check_mark: Use MCP servers
+* :white_check_mark: Use MCP servers to integrate with other services
 
 ## Quick start
 
