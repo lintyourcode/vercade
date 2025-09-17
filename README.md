@@ -114,6 +114,14 @@ MCP_PATH=mcp.json
 }
 ```
 
+### Logging
+
+The `FRIENDBOT_LOG_LEVEL` environment variable is used to configure the bot's logging level. It must be one of: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` (default: `WARNING`).
+
+```
+FRIENDBOT_LOG_LEVEL=WARNING
+```
+
 ### Contributing
 
 Contributions are welcome! Please use [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) and run `poetry run pytest` to test your changes.
