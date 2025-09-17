@@ -87,10 +87,6 @@ async def main():
         raise ValueError("FRIENDBOT_LLM environment variable must be set")
     llm = os.getenv("FRIENDBOT_LLM")
 
-    if not os.getenv("FRIENDBOT_FAST_LLM"):
-        raise ValueError("FRIENDBOT_FAST_LLM environment variable must be set")
-    fast_llm = os.getenv("FRIENDBOT_FAST_LLM")
-
     temperature = os.getenv("FRIENDBOT_LLM_TEMPERATURE")
     temperature = float(temperature) if temperature else None
 
@@ -110,7 +106,6 @@ async def main():
             name=name,
             identity=identity,
             llm=llm,
-            fast_llm=fast_llm,
             temperature=temperature,
             reasoning_effort=os.getenv("FRIENDBOT_LLM_REASONING_EFFORT"),
             mcp_client=mcp_client,

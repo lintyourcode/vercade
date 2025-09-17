@@ -24,7 +24,6 @@ class Agent:
         name: str,
         identity: str,
         llm: Optional[str] = None,
-        fast_llm: Optional[str] = None,
         temperature: Optional[float] = None,
         reasoning_effort: Optional[str] = None,
         mcp_client: Optional[fastmcp.Client] = None,
@@ -36,7 +35,6 @@ class Agent:
             name: Human-readable name of the agent.
             identity: Natural language description of the agent.
             llm: LLM to use for the agent.
-            fast_llm: Smaller, faster LLM to use for simple tasks.
             temperature: Temperature to use for the agent's LLM.
             reasoning_effort: LiteLLM reasoning effort for the agent (e.g. "low", "medium", "high").
             mcp_client: FastMCP client with user-provided tools.
@@ -48,7 +46,6 @@ class Agent:
         self.name = name
         self._identity = identity
         self._llm = llm
-        self._fast_llm = fast_llm
         self._temperature = temperature
         self._mcp_client = mcp_client
         self._tools = None
