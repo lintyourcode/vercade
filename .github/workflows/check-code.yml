@@ -24,7 +24,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
-    # TODO: Add type check once configured
+    # TODO(#14): Add type check once all type errors are fixed
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
