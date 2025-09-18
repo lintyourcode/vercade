@@ -118,12 +118,16 @@ class LocalDiscordMcp:
             return _McpResult([_McpBlock(dump)])
         if name == "send_message":
             ctx = MessageContext(self._social, args["server"], args["channel"])  # type: ignore[index]
-            await self._social.send(ctx, Message(content=args["content"], author=self._bot_name))  # type: ignore[index]
+            await self._social.send(
+                ctx, Message(content=args["content"], author=self._bot_name)
+            )  # type: ignore[index]
             return _McpResult([_McpBlock("ok")])
         if name == "react":
             ctx = MessageContext(self._social, args["server"], args["channel"])  # type: ignore[index]
             msgs = await self._social.messages(ctx, limit=50)
-            target = next((m for m in msgs if m.content == args["message_content"]), None)  # type: ignore[index]
+            target = next(
+                (m for m in msgs if m.content == args["message_content"]), None
+            )  # type: ignore[index]
             if target is None:
                 return _McpResult([_McpBlock("message not found")], is_error=True)
             await self._social.react(ctx, target, args["emoji"])  # type: ignore[index]
