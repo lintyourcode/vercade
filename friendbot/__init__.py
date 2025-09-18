@@ -85,9 +85,16 @@ async def main():
     temperature = os.getenv("FRIENDBOT_LLM_TEMPERATURE")
     temperature = float(temperature) if temperature else None
 
+    # TODO: Move mcp client initialization to own module and add tests
     if os.getenv("MCP_PATH"):
         with open(os.getenv("MCP_PATH")) as f:
-            mcp_client = fastmcp.Client(json.load(f))
+            config = json.load(f)
+        # Resolve MCP server environment variables
+        for server in config["mcpServers"].values():
+            for key, value in server.get("env", {}).items():
+                if value.startswith("$"):
+                    server["env"][key] = os.getenv(value.lstrip("$"))
+        mcp_client = fastmcp.Client(config)
     else:
         mcp_client = None
 

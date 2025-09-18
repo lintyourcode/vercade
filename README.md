@@ -84,7 +84,7 @@ Use `FRIENDBOT_SCHEDULE_INTERVAL` to control background, scheduled agent executi
 
 ### MCP Servers
 
-The `MCP_PATH` environment variable is used to configure the bot's MCP servers. It should be the path to a Claude MCP JSON config file.
+The `MCP_PATH` environment variable is used to configure the bot's MCP servers. It should be the path to a Claude MCP JSON config file. MCP server environment variables beginning with `$` are resolved to the corresponding environment variables.
 
 ```
 MCP_PATH=mcp.json
@@ -103,7 +103,7 @@ MCP_PATH=mcp.json
       "command": "java",
       "args": ["-jar", "/path/to/discord-mcp.jar"],
       "env": {
-        "DISCORD_TOKEN": "your_discord_token"
+        "DISCORD_TOKEN": "$DISCORD_TOKEN"
       }
     }
   }
