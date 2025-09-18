@@ -2,12 +2,11 @@ import dotenv
 import pytest
 from unittest.mock import AsyncMock, Mock, ANY
 from datetime import datetime, timezone
-from typing import Any
 
 from litellm import completion
 
 from friendbot.agent import Agent
-from friendbot.social_media import Channel, Message, Server, SocialMedia
+from friendbot.social_media import Message, SocialMedia
 from .conftest import LocalDiscordMcp
 
 

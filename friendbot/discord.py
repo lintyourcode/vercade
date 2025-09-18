@@ -11,7 +11,6 @@ from friendbot.social_media import (
     Message,
     MessageContext,
     Reaction,
-    Server,
     SocialMedia,
 )
 
