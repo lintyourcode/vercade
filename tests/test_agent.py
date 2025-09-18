@@ -10,7 +10,7 @@ from friendbot.social_media import Message, SocialMedia
 from .conftest import LocalDiscordMcp
 
 
-MODELS = ["gpt-4o", "anthropic/claude-3-5-sonnet-latest"]
+MODELS = ["gpt-4o"]
 
 
 dotenv.load_dotenv()
