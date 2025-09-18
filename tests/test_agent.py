@@ -33,7 +33,8 @@ def get_parameters() -> list[tuple[str, str]]:
 def match(text: str, condition: str, text_type: str = "text") -> bool:
     text_type = text_type.lower()
     response = completion(
-        model="gpt-4o-mini",
+        model="gpt-5-mini",
+        reasoning_effort="low",
         messages=[
             {
                 "role": "user",
@@ -182,6 +183,7 @@ class TestFriend:
             social_media,
         )
         social_media.send.assert_called_once()
+        # TODO: Fix flaky assertion
         assert match(
             social_media.send.call_args[0][1].content,
             "Indicates or implies that the bot has access to the following channels: general, spam",
