@@ -42,8 +42,8 @@ class Message:
     def __init__(
         self,
         content: str,
-        author: str = None,
-        created_at: datetime.datetime = None,
+        author: str,
+        created_at: datetime.datetime,
         embeds: List[Embed] = [],
         reactions: List[Reaction] = [],
     ) -> None:

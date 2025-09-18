@@ -1,4 +1,5 @@
 from __future__ import annotations
+from datetime import datetime, timezone
 from typing import Any
 
 from friendbot.social_media import Message, MessageContext, SocialMedia
@@ -119,7 +120,12 @@ class LocalDiscordMcp:
         if name == "send_message":
             ctx = MessageContext(self._social, args["server"], args["channel"])  # type: ignore[index]
             await self._social.send(
-                ctx, Message(content=args["content"], author=self._bot_name)
+                ctx,
+                Message(
+                    content=args["content"],
+                    author=self._bot_name,
+                    created_at=datetime.now(tz=timezone.utc),
+                ),
             )  # type: ignore[index]
             return _McpResult([_McpBlock("ok")])
         if name == "react":
