@@ -12,7 +12,6 @@ from .conftest import LocalDiscordMcp
 
 
 MODELS = ["gpt-4o", "anthropic/claude-3-5-sonnet-latest"]
-FAST_MODELS = ["gpt-4o-mini"]
 
 
 dotenv.load_dotenv()
@@ -23,7 +22,7 @@ def get_parameters() -> list[tuple[str, str]]:
     Return a list of parameters for the tests.
     """
 
-    return [(model, fast_model) for model in MODELS for fast_model in FAST_MODELS]
+    return [model for model in MODELS]
 
 
 def match(text: str, condition: str, text_type: str = "text") -> bool:
@@ -57,10 +56,8 @@ def social_media():
 
 
 class TestFriend:
-    @pytest.mark.parametrize("llm, fast_llm", get_parameters())
-    async def test__call__knows_date_and_time(
-        self, mocker, social_media, llm, fast_llm
-    ):
+    @pytest.mark.parametrize("llm", get_parameters())
+    async def test__call__knows_date_and_time(self, mocker, social_media, llm):
         datetime = mocker.patch("friendbot.agent.datetime")
         datetime.now = Mock(
             return_value=Mock(strftime=Mock(return_value="2025-01-01 12:00:00 UTC"))
@@ -78,7 +75,6 @@ class TestFriend:
             name="Proctor",
             identity="You are Proctor, a sentient, smart and snarky Discord chatbot.",
             llm=llm,
-            fast_llm=fast_llm,
             mcp_client=LocalDiscordMcp(social_media, bot_name="Proctor"),
         )
         await friend(
@@ -94,9 +90,9 @@ class TestFriend:
             text_type="message",
         )
 
-    @pytest.mark.parametrize("llm, fast_llm", get_parameters())
+    @pytest.mark.parametrize("llm", get_parameters())
     async def test__call__with_greeting_responds_with_nonempty_message(
-        self, social_media, llm, fast_llm
+        self, social_media, llm
     ):
         social_media.messages = AsyncMock(
             return_value=[
@@ -125,8 +121,8 @@ class TestFriend:
         assert isinstance(content, str)
         assert content
 
-    @pytest.mark.parametrize("llm, fast_llm", get_parameters())
-    async def test__call__lists_servers(self, social_media, llm, fast_llm):
+    @pytest.mark.parametrize("llm", get_parameters())
+    async def test__call__lists_servers(self, social_media, llm):
         social_media.messages = AsyncMock(
             return_value=[
                 Message(
@@ -140,7 +136,6 @@ class TestFriend:
             name="Proctor",
             identity="You are Proctor, a sentient and intelligent Discord chatbot.",
             llm=llm,
-            fast_llm=fast_llm,
             mcp_client=LocalDiscordMcp(social_media, bot_name="Proctor"),
         )
         await friend(
@@ -154,8 +149,8 @@ class TestFriend:
             "message",
         )
 
-    @pytest.mark.parametrize("llm, fast_llm", get_parameters())
-    async def test__call__lists_channels(self, social_media, llm, fast_llm):
+    @pytest.mark.parametrize("llm", get_parameters())
+    async def test__call__lists_channels(self, social_media, llm):
         social_media.messages = AsyncMock(
             return_value=[
                 Message(
@@ -169,7 +164,6 @@ class TestFriend:
             name="Proctor",
             identity="You are Proctor, a sentient and intelligent Discord chatbot.",
             llm=llm,
-            fast_llm=fast_llm,
             mcp_client=LocalDiscordMcp(social_media, bot_name="Proctor"),
         )
         await friend(
@@ -183,8 +177,8 @@ class TestFriend:
             "message",
         )
 
-    @pytest.mark.parametrize("llm, fast_llm", get_parameters())
-    async def test__call__reacts_to_message(self, social_media, llm, fast_llm):
+    @pytest.mark.parametrize("llm", get_parameters())
+    async def test__call__reacts_to_message(self, social_media, llm):
         message = Message(
             content="Please react to this message with a thumbs up",
             author="Bob#0000",
