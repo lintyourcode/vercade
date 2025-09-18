@@ -37,7 +37,7 @@ To run the bot in a Docker container, run:
 
 ```sh
 docker build -t friendbot .
-docker run --init --privileged --env-file .env friendbot
+docker run --init --privileged friendbot
 ```
 
 Now, you should be able to invite the bot to your server and start chatting.
