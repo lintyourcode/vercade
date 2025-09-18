@@ -1,6 +1,6 @@
 # Friendbot
 
-Friendbot is an Discord bot that can:
+Friendbot is a Discord bot that can:
 
 * :white_check_mark: Adopt a personality
 * :white_check_mark: Respond to messages with an LLM
