@@ -1,8 +1,9 @@
 FROM python:3.11-slim
 
-RUN apt-get update && apt-get install -y curl git
+RUN apt-get update && apt-get install -y curl git build-essential
 
 ENV PYTHONUNBUFFERED 1
+# TODO: Update Poetry to latest version
 ENV POETRY_VERSION 1.8.3
 
 RUN pip install "poetry==$POETRY_VERSION" uv
