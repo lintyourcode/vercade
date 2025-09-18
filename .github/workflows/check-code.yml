@@ -3,6 +3,12 @@ name: Check Code
 on:
   push:
     branches: ["main"]
+    paths-ignore:
+      - ".vscode"
+      - "LICENSE"
+      - "mcp-template.json"
+      - "README.md"
+      - "template.env"
   pull_request:
     branches: ["main"]
 
