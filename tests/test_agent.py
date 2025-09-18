@@ -184,7 +184,7 @@ class TestFriend:
         social_media.send.assert_called_once()
         assert match(
             social_media.send.call_args[0][1].content,
-            "Indicates that the bot has access to the following channels: general, spam",
+            "Indicates or implies that the bot has access to the following channels: general, spam",
             "message",
         )
 
