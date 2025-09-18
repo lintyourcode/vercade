@@ -4,7 +4,7 @@
       "command": "java",
       "args": ["-jar", "discord-mcp/target/discord-mcp-0.0.1-SNAPSHOT.jar"],
       "env": {
-        "DISCORD_TOKEN": "your_discord_token"
+        "DISCORD_TOKEN": "$DISCORD_TOKEN"
       }
     }
   }
