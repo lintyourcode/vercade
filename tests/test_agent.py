@@ -10,7 +10,7 @@ from friendbot.social_media import Message, SocialMedia
 from .conftest import LocalDiscordMcp
 
 
-MODELS = ["gpt-4o"]
+MODELS = ["gpt-5-mini"]
 
 
 dotenv.load_dotenv()
