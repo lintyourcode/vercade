@@ -10,8 +10,8 @@ from friendbot.social_media import Message, SocialMedia
 from .conftest import LocalDiscordMcp
 
 
-MODELS = ["gpt-5-mini"]
-
+MODELS = ["gpt-5"]
+REASONING_EFFORTS = ["low"]
 
 dotenv.load_dotenv()
 
@@ -19,9 +19,15 @@ dotenv.load_dotenv()
 def get_parameters() -> list[tuple[str, str]]:
     """
     Return a list of parameters for the tests.
+
+    Each parameter is a tuple of a model and a reasoning effort.
     """
 
-    return [model for model in MODELS]
+    return [
+        (model, reasoning_effort)
+        for model in MODELS
+        for reasoning_effort in REASONING_EFFORTS
+    ]
 
 
 def match(text: str, condition: str, text_type: str = "text") -> bool:
@@ -55,8 +61,10 @@ def social_media():
 
 
 class TestFriend:
-    @pytest.mark.parametrize("llm", get_parameters())
-    async def test__call__knows_date_and_time(self, mocker, social_media, llm):
+    @pytest.mark.parametrize("llm, reasoning_effort", get_parameters())
+    async def test__call__knows_date_and_time(
+        self, mocker, social_media, llm, reasoning_effort
+    ):
         datetime = mocker.patch("friendbot.agent.datetime")
         datetime.now = Mock(
             return_value=Mock(strftime=Mock(return_value="2025-01-01 12:00:00 UTC"))
@@ -74,6 +82,7 @@ class TestFriend:
             name="Proctor",
             identity="You are Proctor, a sentient, smart and snarky Discord chatbot.",
             llm=llm,
+            reasoning_effort=reasoning_effort,
             mcp_client=LocalDiscordMcp(social_media, bot_name="Proctor"),
         )
         await friend(
@@ -89,9 +98,9 @@ class TestFriend:
             text_type="message",
         )
 
-    @pytest.mark.parametrize("llm", get_parameters())
+    @pytest.mark.parametrize("llm, reasoning_effort", get_parameters())
     async def test__call__with_greeting_responds_with_nonempty_message(
-        self, social_media, llm
+        self, social_media, llm, reasoning_effort
     ):
         social_media.messages = AsyncMock(
             return_value=[
@@ -106,6 +115,7 @@ class TestFriend:
             name="Proctor",
             identity="You are Proctor, a sentient, smart and snarky Discord chatbot.",
             llm=llm,
+            reasoning_effort=reasoning_effort,
             mcp_client=LocalDiscordMcp(social_media, bot_name="Proctor"),
         )
         await friend(
@@ -120,8 +130,8 @@ class TestFriend:
         assert isinstance(content, str)
         assert content
 
-    @pytest.mark.parametrize("llm", get_parameters())
-    async def test__call__lists_servers(self, social_media, llm):
+    @pytest.mark.parametrize("llm, reasoning_effort", get_parameters())
+    async def test__call__lists_servers(self, social_media, llm, reasoning_effort):
         social_media.messages = AsyncMock(
             return_value=[
                 Message(
@@ -135,6 +145,7 @@ class TestFriend:
             name="Proctor",
             identity="You are Proctor, a sentient and intelligent Discord chatbot.",
             llm=llm,
+            reasoning_effort=reasoning_effort,
             mcp_client=LocalDiscordMcp(social_media, bot_name="Proctor"),
         )
         await friend(
@@ -148,8 +159,8 @@ class TestFriend:
             "message",
         )
 
-    @pytest.mark.parametrize("llm", get_parameters())
-    async def test__call__lists_channels(self, social_media, llm):
+    @pytest.mark.parametrize("llm, reasoning_effort", get_parameters())
+    async def test__call__lists_channels(self, social_media, llm, reasoning_effort):
         social_media.messages = AsyncMock(
             return_value=[
                 Message(
@@ -163,6 +174,7 @@ class TestFriend:
             name="Proctor",
             identity="You are Proctor, a sentient and intelligent Discord chatbot.",
             llm=llm,
+            reasoning_effort=reasoning_effort,
             mcp_client=LocalDiscordMcp(social_media, bot_name="Proctor"),
         )
         await friend(
@@ -176,8 +188,8 @@ class TestFriend:
             "message",
         )
 
-    @pytest.mark.parametrize("llm", get_parameters())
-    async def test__call__reacts_to_message(self, social_media, llm):
+    @pytest.mark.parametrize("llm, reasoning_effort", get_parameters())
+    async def test__call__reacts_to_message(self, social_media, llm, reasoning_effort):
         message = Message(
             content="Please react to this message with a thumbs up",
             author="Bob#0000",
@@ -188,6 +200,7 @@ class TestFriend:
             name="Proctor",
             identity="You are Proctor, a sentient, smart and snarky Discord chatbot.",
             llm=llm,
+            reasoning_effort=reasoning_effort,
             mcp_client=LocalDiscordMcp(social_media, bot_name="Proctor"),
         )
         await friend(
