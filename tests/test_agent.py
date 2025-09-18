@@ -183,10 +183,9 @@ class TestFriend:
             social_media,
         )
         social_media.send.assert_called_once()
-        # TODO: Fix flaky assertion
         assert match(
             social_media.send.call_args[0][1].content,
-            "Indicates or implies that the bot has access to the following channels: general, spam",
+            "Indicates that Discord server Test Server has the following channels: general, spam",
             "message",
         )
 
