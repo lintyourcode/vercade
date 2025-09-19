@@ -104,6 +104,7 @@ class SocialMedia:
 
         raise NotImplementedError("Subclasses must implement this method")
 
+    # TODO(#17): Remove unused `send`
     async def send(self, context: MessageContext, message: Message) -> None:
         """
         Send a message to the social media platform.
@@ -111,6 +112,7 @@ class SocialMedia:
 
         raise NotImplementedError("Subclasses must implement this method")
 
+    # TODO(#17): Remove unused `react`
     async def react(
         self, context: MessageContext, message: Message, reaction: str
     ) -> None:

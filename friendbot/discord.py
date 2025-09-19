@@ -149,6 +149,7 @@ class DiscordClient(discord.Client, SocialMedia):
             )
         )
 
+    # TODO(#17): Remove unused `send`
     async def send(self, context: MessageContext, message: Message) -> None:
         if not self.is_ready():
             return
@@ -158,6 +159,7 @@ class DiscordClient(discord.Client, SocialMedia):
             await asyncio.sleep(len(message.content) / 20.0)
         await channel.send(self._format_message_for_discord(message, channel))
 
+    # TODO(#17): Remove unused `react`
     async def react(
         self, context: MessageContext, message: Message, emoji: str
     ) -> None:
