@@ -116,10 +116,9 @@ class DiscordClient(discord.Client, SocialMedia):
     async def _get_guild_and_channel(
         self, context: MessageContext
     ) -> Tuple[discord.Guild, discord.TextChannel]:
-        # TODO: Look up guild by id instead of name
-        guild = discord.utils.get(self.guilds, name=context.server.name)
+        guild = discord.utils.get(self.guilds, id=context.server.id)
         if not guild:
-            raise ValueError(f"Guild {context.server.name} not found")
+            raise ValueError(f"Guild {context.server.id} not found")
         channel = discord.utils.get(guild.text_channels, name=context.channel.name)
         if not channel:
             raise ValueError(f"Channel {context.channel.id} not found")
