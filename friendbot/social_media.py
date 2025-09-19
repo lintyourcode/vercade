@@ -27,9 +27,8 @@ class Embed:
 
 
 class MessageContext:
-    # TODO: Type `server` as `Server`
     def __init__(
-        self, social_media: SocialMedia, server: str, channel: Channel
+        self, social_media: SocialMedia, server: Server, channel: Channel
     ) -> None:
         self.social_media = social_media
         self.server = server

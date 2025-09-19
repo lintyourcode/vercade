@@ -11,6 +11,7 @@ from friendbot.social_media import (
     Message,
     MessageContext,
     Reaction,
+    Server,
     SocialMedia,
 )
 
@@ -101,11 +102,12 @@ class DiscordClient(discord.Client, SocialMedia):
 
     async def on_message(self, message: discord.Message) -> None:
         if self.on_message_callback:
+            server = Server(name=message.guild.name)
             channel = Channel(id=message.channel.id, name=message.channel.name)
             await self.on_message_callback(
                 MessageContext(
                     social_media=self,
-                    server=message.guild.name,
+                    server=server,
                     channel=channel,
                 ),
                 await self._discord_message_to_message(message),
@@ -114,9 +116,10 @@ class DiscordClient(discord.Client, SocialMedia):
     async def _get_guild_and_channel(
         self, context: MessageContext
     ) -> Tuple[discord.Guild, discord.TextChannel]:
-        guild = discord.utils.get(self.guilds, name=context.server)
+        # TODO: Look up guild by id instead of name
+        guild = discord.utils.get(self.guilds, name=context.server.name)
         if not guild:
-            raise ValueError(f"Guild {context.server} not found")
+            raise ValueError(f"Guild {context.server.name} not found")
         channel = discord.utils.get(guild.text_channels, name=context.channel.name)
         if not channel:
             raise ValueError(f"Channel {context.channel.id} not found")
