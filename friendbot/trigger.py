@@ -22,9 +22,8 @@ class Trigger:
         schedule_interval_seconds: float | None = 60 * 60,
     ) -> None:
         self._agent = friend
-        # TODO(#14): Type `response_tasks` as `dict[str, dict[int, asyncio.Task]]`
-        # TODO: Track response tasks by server id instead of name
-        self._response_tasks: dict[str, dict[str, asyncio.Task]] = {}
+        # TODO(#14): Type `response_tasks` as `dict[int, dict[int, asyncio.Task]]`
+        self._response_tasks: dict[int, dict[str, asyncio.Task]] = {}
         # TODO: Remove unused `schedule_task`
         self._schedule_task: asyncio.Task | None = None
         self._scheduled_tasks: dict[str, asyncio.Task] = {}
@@ -84,13 +83,11 @@ class Trigger:
             )
 
     def _remove_response_task(self, context: MessageContext) -> None:
-        if not self._response_tasks.get(context.server.name, {}).get(
-            context.channel.id
-        ):
+        if not self._response_tasks.get(context.server.id, {}).get(context.channel.id):
             return
 
-        del self._response_tasks[context.server.name][context.channel.id]
-        if len(self._response_tasks[context.server.name]) == 0:
+        del self._response_tasks[context.server.id][context.channel.id]
+        if len(self._response_tasks[context.server.id]) == 0:
             del self._response_tasks[context.server.name]
 
     async def read_message(self, context: MessageContext, message: Message) -> None:
@@ -107,7 +104,7 @@ class Trigger:
 
         # If we're already working on a response to a previous message in the
         # same channel, cancel it
-        task = self._response_tasks.get(context.server.name, {}).get(context.channel.id)
+        task = self._response_tasks.get(context.server.id, {}).get(context.channel.id)
         if task and not task.done():
             task.cancel()
             # Ensure the task is actually cancelled before proceeding to avoid duplicate sends
@@ -118,7 +115,7 @@ class Trigger:
             self._remove_response_task(context)
 
         task = asyncio.create_task(self._respond(context))
-        self._response_tasks.setdefault(context.server.name, {})[
+        self._response_tasks.setdefault(context.server.id, {})[
             context.channel.id
         ] = task
         task.add_done_callback(

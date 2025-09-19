@@ -102,7 +102,7 @@ class DiscordClient(discord.Client, SocialMedia):
 
     async def on_message(self, message: discord.Message) -> None:
         if self.on_message_callback:
-            server = Server(name=message.guild.name)
+            server = Server(id=message.guild.id, name=message.guild.name)
             channel = Channel(id=message.channel.id, name=message.channel.name)
             await self.on_message_callback(
                 MessageContext(

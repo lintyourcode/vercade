@@ -5,7 +5,8 @@ from datetime import datetime
 
 
 class Server:
-    def __init__(self, name: str) -> None:
+    def __init__(self, id: int, name: str) -> None:
+        self.id = id
         self.name = name
 
 
