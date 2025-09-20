@@ -88,7 +88,7 @@ class Trigger:
 
         del self._response_tasks[context.server.id][context.channel.id]
         if len(self._response_tasks[context.server.id]) == 0:
-            del self._response_tasks[context.server.name]
+            del self._response_tasks[context.server.id]
 
     async def read_message(self, context: MessageContext, message: Message) -> None:
         """
