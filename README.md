@@ -7,6 +7,8 @@ Friendbot is a Discord bot that can:
 * :white_check_mark: Reason
 * :white_check_mark: Use MCP servers to integrate with other services
 
+When setting up friendbot, you'll attach it to a Discord bot and add the bot to some servers. Whenever a message is sent in a server, friendbot will invoke an LLM agent. The agent has access to whichever MCP servers you've configured. It will call whichever tools it needs to, based on a system prompt.
+
 ## Quick start
 
 ### Discord
