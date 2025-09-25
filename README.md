@@ -52,7 +52,7 @@ The `FRIENDBOT_NAME` environment variable is used to configure the bot's name. I
 
 ### Identity
 
-The `FRIENDBOT_IDENTITY` environment variable is used to configure the bot's personality. A simple identity might look like this:
+The `FRIENDBOT_IDENTITY` environment variable is used to configure the bot's personality and behavior. A simple identity might look like this:
 
 ```
 FRIENDBOT_IDENTITY="You are a funny, intelligent and creative AI Discord user named Sam."
