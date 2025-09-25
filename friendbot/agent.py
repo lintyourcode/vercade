@@ -51,7 +51,7 @@ class Agent:
         self._tools = None
         self._reasoning_effort = reasoning_effort
 
-    async def _mcp_tool(self, tool_name: str, input: str) -> str:
+    async def _mcp_tool(self, tool_name: str, input: str) -> list[dict[str, Any]]:
         if not self._mcp_client:
             raise ValueError("No MCP client provided")
         input = self._parse_input(input)
@@ -59,8 +59,7 @@ class Agent:
             result = await self._mcp_client.call_tool(tool_name, input)
         except Exception as e:
             return f"Error calling tool {tool_name}: {e}"
-        # TODO: Support tools that output images or audio
-        output = "\n".join([block.text for block in result.content])
+        output = [block.model_dump() for block in result.content]
         if result.is_error:
             return f"Error calling tool {tool_name}: {output}"
         return output
@@ -91,6 +90,7 @@ class Agent:
         )
         return self._tools
 
+    # TODO: Update return typehint
     async def _run_tool(
         self, tool_call: ChatCompletionMessageToolCall, functions: Dict[str, Any]
     ) -> None:
