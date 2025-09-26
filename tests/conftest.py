@@ -9,6 +9,12 @@ class _McpBlock:
     def __init__(self, text: str) -> None:
         self.text = text
 
+    def model_dump(self) -> dict[str, Any]:
+        return {
+            "type": "text",
+            "text": self.text,
+        }
+
 
 class _McpResult:
     def __init__(self, content: list[_McpBlock], is_error: bool = False) -> None:
