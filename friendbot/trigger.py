@@ -115,9 +115,9 @@ class Trigger:
             self._remove_response_task(context)
 
         task = asyncio.create_task(self._respond(context))
-        self._response_tasks.setdefault(context.server.id, {})[
-            context.channel.id
-        ] = task
+        self._response_tasks.setdefault(context.server.id, {})[context.channel.id] = (
+            task
+        )
         task.add_done_callback(
             lambda task, context=context: self._remove_response_task(context)
         )
