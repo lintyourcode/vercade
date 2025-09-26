@@ -13,6 +13,7 @@ from friendbot.discord import DiscordClient
 from friendbot.trigger import Trigger
 
 
+# TODO(#22): Move outside of __init__.py
 def _parse_schedule_interval_seconds(value: str | None) -> float | None:
     """
     Parse FRIENDBOT_SCHEDULE_INTERVAL into seconds.
@@ -85,7 +86,7 @@ async def main():
     temperature = os.getenv("FRIENDBOT_LLM_TEMPERATURE")
     temperature = float(temperature) if temperature else None
 
-    # TODO: Move mcp client initialization to own module and add tests
+    # TODO(#22): Move mcp client initialization to own module
     if os.getenv("MCP_PATH"):
         with open(os.getenv("MCP_PATH")) as f:
             config = json.load(f)
