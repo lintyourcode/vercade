@@ -1,5 +1,6 @@
 FROM python:3.11-slim
 
+# TODO(#25): Remove curl along with nvm
 RUN apt-get update && apt-get install -y curl git build-essential
 
 ENV PYTHONUNBUFFERED 1
@@ -8,6 +9,7 @@ ENV POETRY_VERSION 1.8.3
 
 RUN pip install "poetry==$POETRY_VERSION" uv
 
+# TODO(#25): Remove nvm
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash \
     && . "$HOME/.nvm/nvm.sh" \
     && nvm install 24 \
