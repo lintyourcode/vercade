@@ -122,9 +122,7 @@ FRIENDBOT_LOG_LEVEL=WARNING
 
 ### Contributing
 
-<!-- TODO(#14): Document type checking once all type errors are fixed -->
-
-Contributions are welcome! Please use [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) and run `poetry run pytest` to test your changes.
+Please see [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ### License
 
