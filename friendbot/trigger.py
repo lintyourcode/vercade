@@ -42,14 +42,13 @@ class Trigger:
 
         return True
 
-    async def _run_idle(self, social_media: SocialMedia) -> None:
+    async def _run_idle(self) -> None:
         while True:
             if random.randint(0, 1) == 0:
                 task_id = str(uuid.uuid4())
                 self._scheduled_tasks[task_id] = asyncio.create_task(
                     self._agent(
-                        "You are currently idle. If you'd like, you can choose to do something interesting to pass the time. You may also choose to do nothing at all.",
-                        social_media=social_media,
+                        "You are currently idle. If you'd like, you can choose to do something interesting to pass the time. You may also choose to do nothing at all."
                     )
                 )
                 self._scheduled_tasks[task_id].add_done_callback(
@@ -63,8 +62,7 @@ class Trigger:
             return
 
         await self._agent(
-            f"You received a message in the Discord server {context.server.name} (with id {context.server.id}) and channel {context.channel.name} (with id {context.channel.id}).",
-            social_media=context.social_media,
+            f"You received a message in the Discord server {context.server.name} (with id {context.server.id}) and channel {context.channel.name} (with id {context.channel.id})."
         )
 
     async def connect(self) -> None:
@@ -78,9 +76,7 @@ class Trigger:
 
         # Start scheduler if enabled
         if self._schedule_interval_seconds and self._schedule_interval_seconds > 0:
-            self._schedule_task = asyncio.create_task(
-                self._run_idle(self._social_media)
-            )
+            self._schedule_task = asyncio.create_task(self._run_idle())
 
     def _remove_response_task(self, context: MessageContext) -> None:
         if not self._response_tasks.get(context.server.id, {}).get(context.channel.id):

@@ -7,8 +7,6 @@ from typing import Any, Dict, List, Optional
 import fastmcp
 from litellm import ChatCompletionMessageToolCall, completion
 
-from friendbot.social_media import SocialMedia
-
 
 # TODO: Make social media-specific
 _USER_MESSAGE_TEMPLATE = "{event} The current date and time is {date_time}. You may use any tools available to you, or do nothing at all. The user cannot see your responses directly, so you must use the tools if you would like to respond to the user. Take your time and think carefully before responding."
@@ -115,7 +113,7 @@ class Agent:
             "content": result,
         }
 
-    async def __call__(self, event: str, social_media: SocialMedia) -> None:
+    async def __call__(self, event: str) -> None:
         """
         Respond to recent messages in the provided conversation.
 

@@ -87,8 +87,7 @@ class TestFriend:
             mcp_client=LocalDiscordMcp(social_media, bot_name="Proctor"),
         )
         await friend(
-            "You received a message in the Discord server Test Server's channel #general.",
-            social_media,
+            "You received a message in the Discord server Test Server's channel #general."
         )
         # TODO: Assert that the message is sent to the correct server.
         # TODO: Assert that the message is sent to the correct channel.
@@ -120,8 +119,7 @@ class TestFriend:
             mcp_client=LocalDiscordMcp(social_media, bot_name="Proctor"),
         )
         await friend(
-            "You received a message in the Discord server Test Server's channel #general.",
-            social_media,
+            "You received a message in the Discord server Test Server's channel #general."
         )
         social_media.send.assert_called_once()
         assert social_media.send.call_args[0][0].server == "Test Server"
@@ -150,8 +148,7 @@ class TestFriend:
             mcp_client=LocalDiscordMcp(social_media, bot_name="Proctor"),
         )
         await friend(
-            "You received a message in the Discord server Test Server's channel #general.",
-            social_media,
+            "You received a message in the Discord server Test Server's channel #general."
         )
         social_media.send.assert_called_once()
         assert match(
@@ -179,8 +176,7 @@ class TestFriend:
             mcp_client=LocalDiscordMcp(social_media, bot_name="Proctor"),
         )
         await friend(
-            "You received a message in the Discord server Test Server's channel #general.",
-            social_media,
+            "You received a message in the Discord server Test Server's channel #general."
         )
         social_media.send.assert_called_once()
         assert match(
@@ -205,8 +201,7 @@ class TestFriend:
             mcp_client=LocalDiscordMcp(social_media, bot_name="Proctor"),
         )
         await friend(
-            "You received a message in the Discord server Test Server's channel #general.",
-            social_media,
+            "You received a message in the Discord server Test Server's channel #general."
         )
         # TODO: Ensure LocalDiscordMcp returns channels to allow react flow to proceed deterministically
         social_media.react.assert_called_once_with(ANY, ANY, "👍")
