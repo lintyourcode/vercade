@@ -2,8 +2,8 @@ import asyncio
 import random
 import uuid
 
-from friendbot.agent import Agent
-from friendbot.social_media import Message, MessageContext, SocialMedia
+from vercade.agent import Agent
+from vercade.social_media import Message, MessageContext, SocialMedia
 
 
 class Trigger:

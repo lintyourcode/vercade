@@ -27,4 +27,4 @@ RUN poetry config virtualenvs.create false \
 
 COPY . .
 
-CMD ["poetry", "run", "python", "-m", "friendbot"]
+CMD ["poetry", "run", "python", "-m", "vercade"]

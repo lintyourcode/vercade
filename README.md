@@ -1,13 +1,13 @@
-# Friendbot
+# Vercade
 
-Friendbot is a Discord bot that can:
+Vercade is a Discord bot that can:
 
 * :white_check_mark: Adopt a personality
 * :white_check_mark: Respond to messages with an LLM
 * :white_check_mark: Reason
 * :white_check_mark: Use MCP servers to integrate with other services
 
-When setting up friendbot, you'll attach it to a Discord bot and add the bot to some servers. Whenever a message is sent in a server, friendbot will invoke an LLM agent. The agent has access to whichever MCP servers you've configured. It will call whichever tools it needs to, based on a system prompt.
+When setting up vercade, you'll attach it to a Discord bot and add the bot to some servers. Whenever a message is sent in a server, vercade will invoke an LLM agent. The agent has access to whichever MCP servers you've configured. It will call whichever tools it needs to, based on a system prompt.
 
 ## Quick start
 
@@ -32,14 +32,14 @@ $EDITOR .env
 To start up your bot, run:
 
 ```sh
-poetry run python -m friendbot
+poetry run python -m vercade
 ```
 
 To run the bot in a Docker container, run:
 
 ```sh
-docker build -t friendbot .
-docker run --init --privileged friendbot
+docker build -t vercade .
+docker run --init --privileged vercade
 ```
 
 Now, you should be able to invite the bot to your server and start chatting.
@@ -48,35 +48,35 @@ Now, you should be able to invite the bot to your server and start chatting.
 
 ### Name
 
-The `FRIENDBOT_NAME` environment variable is used to configure the bot's name. It must match the name of the Discord bot.
+The `VERCADE_NAME` environment variable is used to configure the bot's name. It must match the name of the Discord bot.
 
 ### Identity
 
-The `FRIENDBOT_IDENTITY` environment variable is used to configure the bot's personality and behavior. A simple identity might look like this:
+The `VERCADE_IDENTITY` environment variable is used to configure the bot's personality and behavior. A simple identity might look like this:
 
 ```
-FRIENDBOT_IDENTITY="You are a funny, intelligent and creative AI Discord user named Sam."
+VERCADE_IDENTITY="You are a funny, intelligent and creative AI Discord user named Sam."
 ```
 
 More complex identities generally result in more interesting responses.
 
 ### Activity
 
-The `FRIENDBOT_ACTIVITY` environment variable can be used to configure the bot's initial presence. It must be a string.
+The `VERCADE_ACTIVITY` environment variable can be used to configure the bot's initial presence. It must be a string.
 
 ```
-FRIENDBOT_ACTIVITY="Ping me!"
+VERCADE_ACTIVITY="Ping me!"
 ```
 
 ### Models
 
-The `FRIENDBOT_LLM` environment variable is used to configure the bot's language model. All [LiteLLM](https://docs.litellm.ai/docs/providers) models are supported.
-* The `FRIENDBOT_LLM_TEMPERATURE` environment variable is used to configure the LLM's temperature.
-* The `FRIENDBOT_LLM_REASONING_EFFORT` environment variable is used to configure the LLM's reasoning effort (e.g. "low", "medium", "high").
+The `VERCADE_LLM` environment variable is used to configure the bot's language model. All [LiteLLM](https://docs.litellm.ai/docs/providers) models are supported.
+* The `VERCADE_LLM_TEMPERATURE` environment variable is used to configure the LLM's temperature.
+* The `VERCADE_LLM_REASONING_EFFORT` environment variable is used to configure the LLM's reasoning effort (e.g. "low", "medium", "high").
 
 ### Scheduling
 
-Use `FRIENDBOT_SCHEDULE_INTERVAL` to control background, scheduled agent execution. The agent will always respond when messaged regardless of this setting.
+Use `VERCADE_SCHEDULE_INTERVAL` to control background, scheduled agent execution. The agent will always respond when messaged regardless of this setting.
 
 - **Default**: `1h` (one hour)
 - **Disable**: set to `off`, `false`, `disabled`, `none`, `no`, or `0`
@@ -114,10 +114,10 @@ MCP_PATH=mcp.json
 
 ### Logging
 
-The `FRIENDBOT_LOG_LEVEL` environment variable is used to configure the bot's logging level. It must be one of: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` (default: `WARNING`).
+The `VERCADE_LOG_LEVEL` environment variable is used to configure the bot's logging level. It must be one of: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` (default: `WARNING`).
 
 ```
-FRIENDBOT_LOG_LEVEL=WARNING
+VERCADE_LOG_LEVEL=WARNING
 ```
 
 ### Contributing
@@ -126,4 +126,4 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ### License
 
-Friendbot is open source software released under the [GNU General Public License v3.0](LICENSE).
+Vercade is open source software released under the [GNU General Public License v3.0](LICENSE).

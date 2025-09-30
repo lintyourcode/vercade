@@ -5,7 +5,7 @@
       "name": "Python Debugger: Module",
       "type": "debugpy",
       "request": "launch",
-      "module": "friendbot"
+      "module": "vercade"
     }
   ]
 }

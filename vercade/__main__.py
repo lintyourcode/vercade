@@ -1,6 +1,6 @@
 import asyncio
 
-from friendbot import main
+from vercade import main
 
 
 if __name__ == "__main__":

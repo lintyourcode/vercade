@@ -4,8 +4,8 @@ from typing import List, Tuple
 
 import discord
 
-from friendbot.agent import Agent
-from friendbot.social_media import (
+from vercade.agent import Agent
+from vercade.social_media import (
     Channel,
     Embed,
     Message,

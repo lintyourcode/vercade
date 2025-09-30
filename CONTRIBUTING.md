@@ -2,7 +2,7 @@
 
 <!-- TODO(#14): Document type checking once all type errors are fixed -->
 
-Thanks for contributing to friendbot!
+Thanks for contributing to vercade!
 
 ## Getting started
 

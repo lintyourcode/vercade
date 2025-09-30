@@ -2,7 +2,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from friendbot.social_media import Message, MessageContext, SocialMedia
+from vercade.social_media import Message, MessageContext, SocialMedia
 
 
 class _McpBlock:

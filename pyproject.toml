@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "friendbot"
+name = "vercade"
 version = "0.1.0"
 description = ""
 authors = ["David <161997989+lintyourcode@users.noreply.github.com>"]

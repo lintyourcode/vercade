@@ -5,8 +5,8 @@ from datetime import datetime, timezone
 
 from litellm import completion
 
-from friendbot.agent import Agent
-from friendbot.social_media import Message, SocialMedia
+from vercade.agent import Agent
+from vercade.social_media import Message, SocialMedia
 from .conftest import LocalDiscordMcp
 
 
@@ -66,7 +66,7 @@ class TestFriend:
     async def test__call__knows_date_and_time(
         self, mocker, social_media, llm, reasoning_effort
     ):
-        datetime = mocker.patch("friendbot.agent.datetime")
+        datetime = mocker.patch("vercade.agent.datetime")
         datetime.now = Mock(
             return_value=Mock(strftime=Mock(return_value="2025-01-01 12:00:00 UTC"))
         )
