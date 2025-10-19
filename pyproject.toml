@@ -5,6 +5,7 @@ description = ""
 authors = ["David <161997989+lintyourcode@users.noreply.github.com>"]
 readme = "README.md"
 license = "GPL-3.0-or-later"
+
 [tool.poetry.dependencies]
 python = "^3.11"
 openai = "^1.37.1"
@@ -15,7 +16,6 @@ langchain-community = "0.3.27"
 protoc-gen-openapiv2 = "^0.0.1"
 nest-asyncio = "^1.6.0"
 fastmcp = "^2.12.4"
-
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.2"
