@@ -1,5 +1,7 @@
 # Vercade
 
+[![Discord](https://img.shields.io/badge/Discord-5865F2?style=flat&logo=discord&logoColor=white)](https://discord.gg/4fcsGm9sqj)
+
 Vercade is a Discord bot that can:
 
 * :white_check_mark: Adopt a personality
