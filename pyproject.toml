@@ -15,7 +15,7 @@ litellm = "^1.78.5"
 langchain-community = "0.3.27"
 protoc-gen-openapiv2 = "^0.0.1"
 nest-asyncio = "^1.6.0"
-fastmcp = "^2.13.0"
+fastmcp = "^2.13.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.2"
