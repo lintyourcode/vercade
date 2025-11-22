@@ -1,5 +1,4 @@
 import asyncio
-import random
 import uuid
 
 from vercade.agent import Agent
@@ -44,16 +43,15 @@ class Trigger:
 
     async def _run_idle(self) -> None:
         while True:
-            if random.randint(0, 1) == 0:
-                task_id = str(uuid.uuid4())
-                self._scheduled_tasks[task_id] = asyncio.create_task(
-                    self._agent(
-                        "You are currently idle. If you'd like, you can choose to do something interesting to pass the time. You may also choose to do nothing at all."
-                    )
+            task_id = str(uuid.uuid4())
+            self._scheduled_tasks[task_id] = asyncio.create_task(
+                self._agent(
+                    "You are currently idle. If you'd like, you can choose to do something interesting to pass the time. You may also choose to do nothing at all."
                 )
-                self._scheduled_tasks[task_id].add_done_callback(
-                    lambda task, task_id=task_id: self._scheduled_tasks.pop(task_id)
-                )
+            )
+            self._scheduled_tasks[task_id].add_done_callback(
+                lambda task, task_id=task_id: self._scheduled_tasks.pop(task_id)
+            )
             await asyncio.sleep(self._schedule_interval_seconds)
 
     async def _respond(self, context: MessageContext) -> None:
