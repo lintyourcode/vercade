@@ -18,7 +18,7 @@ class Trigger:
         social_media: SocialMedia,
         friend: Agent,
         *,
-        schedule_interval_seconds: float | None = 60 * 60,
+        schedule_interval_seconds: float | None = None,
     ) -> None:
         self._agent = friend
         # TODO(#14): Type `response_tasks` as `dict[int, dict[int, asyncio.Task]]`

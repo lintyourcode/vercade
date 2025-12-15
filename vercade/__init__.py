@@ -24,7 +24,7 @@ def _parse_schedule_interval_seconds(value: str | None) -> float | None:
     """
 
     if value is None or value.strip() == "":
-        return 60.0 * 60.0
+        return None
 
     normalized = value.strip().lower()
     if normalized in {"0", "off", "false", "disabled", "none", "no"}:
