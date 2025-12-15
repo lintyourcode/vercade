@@ -86,11 +86,8 @@ The `VERCADE_LLM` environment variable is used to configure the bot's language m
 
 Use `VERCADE_SCHEDULE_INTERVAL` to control background, scheduled agent execution. The agent will always respond when messaged regardless of this setting.
 
-- **Default**: `1h` (one hour)
-- **Disable**: set to `off`, `false`, `disabled`, `none`, `no`, or `0`
-- **Formats**:
-  - Plain seconds: `300`
-  - With suffix: `45s`, `15m`, `2h`
+- **Default**: `disabled` (no scheduling)
+- **Enable**: set to a number of seconds, or a suffix like `15m`, `2h`, etc.
 
 ### MCP Servers
 
