@@ -13,6 +13,10 @@ Vercade is a Discord bot that can:
 
 When setting up vercade, you'll attach it to a Discord bot and add the bot to some servers. Whenever a message is sent in a server, vercade will invoke an LLM agent. The agent has access to whichever MCP servers you've configured. It will call whichever tools it needs to, based on a system prompt.
 
+## Disclaimer
+
+:warning: This project is in early development. It is not yet ready for production use.
+
 ## Quick start
 
 ### Discord
