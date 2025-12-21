@@ -32,15 +32,6 @@ class Trigger:
         social_media.on_ready_callback = self.connect
         social_media.on_message_callback = self.read_message
 
-    def _should_respond(self, message: Message) -> bool:
-        if message.author == self._agent.name:
-            return False
-
-        if len(message.mentions) > 0 and self._agent.name not in message.mentions:
-            return False
-
-        return True
-
     async def _run_idle(self) -> None:
         while True:
             task_id = str(uuid.uuid4())
@@ -84,7 +75,7 @@ class Trigger:
             message: New message to respond to.
         """
 
-        if not self._should_respond(message):
+        if message.author == self._agent.name:
             return
 
         # If we're already working on a response to a previous message in the
