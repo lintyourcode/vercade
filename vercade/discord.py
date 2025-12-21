@@ -25,9 +25,9 @@ class DiscordClient(discord.Client, SocialMedia):
         loop=None,
         **options,
     ) -> None:
-        intents = discord.Intents.default()
-        intents.members = True
-        discord.Client.__init__(self, loop=loop, intents=intents, **options)
+        discord.Client.__init__(
+            self, loop=loop, intents=discord.Intents.default(), **options
+        )
         SocialMedia.__init__(self)
 
         if not friend:
