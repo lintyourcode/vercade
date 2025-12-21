@@ -54,15 +54,6 @@ class Trigger:
             )
             await asyncio.sleep(self._schedule_interval_seconds)
 
-    async def _respond(self, context: MessageContext) -> None:
-        messages = await context.social_media.messages(context, limit=1)
-        if len(messages) > 0 and not self._should_respond(messages[0]):
-            return
-
-        await self._agent(
-            f"You received a message in the Discord server {context.server.name} (with id {context.server.id}) and channel {context.channel.name} (with id {context.channel.id})."
-        )
-
     async def connect(self) -> None:
         """
         Initialize the trigger.
@@ -108,7 +99,11 @@ class Trigger:
                 pass
             self._remove_response_task(context)
 
-        task = asyncio.create_task(self._respond(context))
+        task = asyncio.create_task(
+            self._agent(
+                f"You received a message in the Discord server {context.server.name} (with id {context.server.id}) and channel {context.channel.name} (with id {context.channel.id})."
+            )
+        )
         self._response_tasks.setdefault(context.server.id, {})[
             context.channel.id
         ] = task
