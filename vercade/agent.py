@@ -57,7 +57,7 @@ class Agent:
             result = await self._mcp_client.call_tool(tool_name, input)
         except Exception as e:
             return f"Error calling tool {tool_name}: {e}"
-        output = [block.model_dump() for block in result.content]
+        output = json.dumps([block.model_dump() for block in result.content])
         if result.is_error:
             return f"Error calling tool {tool_name}: {output}"
         return output
