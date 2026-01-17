@@ -95,9 +95,9 @@ class Trigger:
                 f"You received a message in the Discord server {context.server.name} (with id {context.server.id}) and channel {context.channel.name} (with id {context.channel.id})."
             )
         )
-        self._response_tasks.setdefault(context.server.id, {})[
-            context.channel.id
-        ] = task
+        self._response_tasks.setdefault(context.server.id, {})[context.channel.id] = (
+            task
+        )
         task.add_done_callback(
             lambda task, context=context: self._remove_response_task(context)
         )
