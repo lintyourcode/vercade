@@ -131,4 +131,4 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ### License
 
-Vercade is open source software released under the [GNU General Public License v3.0](LICENSE).
+Vercade is open source software released under the [Apache 2.0 license](LICENSE).
