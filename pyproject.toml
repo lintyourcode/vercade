@@ -7,10 +7,10 @@ readme = "README.md"
 license = "GPL-3.0-or-later"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.11,<3.14"
 python-dotenv = "^1.0.0"
 discord = "^2.3.2"
-litellm = "^1.82.3"
+litellm = "^1.87.1"
 protoc-gen-openapiv2 = "^0.0.1"
 nest-asyncio = "^1.6.0"
 fastmcp = "^3.1.1"
