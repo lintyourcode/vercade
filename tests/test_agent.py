@@ -9,8 +9,7 @@ from vercade.agent import Agent
 from vercade.social_media import Message, SocialMedia
 from .conftest import LocalDiscordMcp
 
-
-MODELS = ["gpt-5"]
+MODELS = ["gpt-5.5"]
 REASONING_EFFORTS = ["low"]
 
 dotenv.load_dotenv()
