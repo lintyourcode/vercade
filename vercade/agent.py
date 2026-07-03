@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Optional
 import fastmcp
 from litellm import ChatCompletionMessageToolCall, completion
 
-
 # TODO: Make social media-specific
 _USER_MESSAGE_TEMPLATE = "{event} The current date and time is {date_time}. You may use any tools available to you, or do nothing at all. The user cannot see your responses directly, so you must use the tools if you would like to respond to the user. Take your time and think carefully before responding."
 
@@ -93,7 +92,12 @@ class Agent:
         self, tool_call: ChatCompletionMessageToolCall, functions: Dict[str, Any]
     ) -> None:
         if tool_call.function.name not in functions:
-            raise ValueError(f"Unknown tool: {tool_call.function.name}")
+            return {
+                "role": "tool",
+                "tool_call_id": tool_call.id,
+                "name": tool_call.function.name,
+                "content": f"Unknown tool: {tool_call.function.name}",
+            }
 
         print(
             f"Calling tool {tool_call.function.name} with {tool_call.function.arguments}"
