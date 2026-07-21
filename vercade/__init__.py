@@ -19,15 +19,15 @@ def _parse_schedule_interval_seconds(value: str | None) -> float | None:
     Parse VERCADE_SCHEDULE_INTERVAL into seconds.
 
     Supports raw seconds (e.g. "300"), or suffixed values like "15m", "2h", "45s".
-    Disable scheduling with one of: "0", "off", "false", "disabled", "none", "no".
+    Disable scheduling with "disabled".
     Returns None to indicate disabled.
     """
 
-    if value is None or value.strip() == "":
+    if value is None:
         return None
 
     normalized = value.strip().lower()
-    if normalized in {"0", "off", "false", "disabled", "none", "no"}:
+    if normalized in {"", "disabled"}:
         return None
 
     # Plain seconds
@@ -39,7 +39,7 @@ def _parse_schedule_interval_seconds(value: str | None) -> float | None:
     match = re.fullmatch(r"(\d+(?:\.\d*)?)([smh])", normalized)
     if not match:
         raise ValueError(
-            "VERCADE_SCHEDULE_INTERVAL must be a number of seconds or end with s/m/h (e.g. '300', '15m', '2h', or 'off')"
+            "VERCADE_SCHEDULE_INTERVAL must be a number of seconds or end with s/m/h (e.g. '300', '15m', '2h', or 'disabled')"
         )
 
     amount = float(match.group(1))
