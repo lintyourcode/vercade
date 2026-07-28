@@ -1,21 +1,42 @@
 # Vercade
 
-![Discord welcome screenshot](screenshots/discord-welcome.png)
-
 [![Discord](https://img.shields.io/badge/Discord-5865F2?style=flat&logo=discord&logoColor=white)](https://discord.gg/4fcsGm9sqj)
 
-Vercade is a Discord bot that can:
+Vercade is a generic Discord bot that can:
 
-* :white_check_mark: Adopt a personality
-* :white_check_mark: Respond to messages with an LLM
-* :white_check_mark: Reason
-* :white_check_mark: Use MCP servers to integrate with other services
+* :white_check_mark: Process Discord messages with any LLM supported by [LiteLLM](https://docs.litellm.ai/docs/providers)
+* :white_check_mark: Follow a custom system prompt
+* :white_check_mark: Use MCP servers to integrate with external services
 
 When setting up vercade, you'll attach it to a Discord bot and add the bot to some servers. Whenever a message is sent in a server, vercade will invoke an LLM agent. The agent has access to whichever MCP servers you've configured. It will call whichever tools it needs to, based on a system prompt.
 
 ## Disclaimer
 
 :warning: This project is in early development. It is not yet ready for production use.
+
+## Example use cases
+
+### Moderation
+
+Vercade can be configured to monitor messages in a server and ping the admins when a message clearly breaks one of the server's rules.
+
+Say, a user sends this message in #test:
+
+![Spam message](screenshots/spam.png)
+
+The bot could message the admins in #moderation:
+
+![Moderation message](screenshots/moderation.png)
+
+The admins could then investigate the message and take appropriate action.
+
+### Customer support
+
+Vercade could instead be configured to answer customer support questions that it can confidently answer, grounding its answers in the product's knowledge base.
+
+### General purpose assistant
+
+You could set up Vercade to be a general purpose assistant for your community or private server.
 
 ## Quick start
 
