@@ -12,7 +12,7 @@ python-dotenv = "^1.2.2"
 discord = "^2.3.2"
 litellm = "^1.87.1"
 nest-asyncio = "^1.6.0"
-fastmcp = "3.2.4"
+fastmcp = "3.4.4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.3"
