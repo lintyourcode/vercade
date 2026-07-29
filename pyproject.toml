@@ -15,7 +15,7 @@ nest-asyncio = "^1.6.0"
 fastmcp = "3.4.4"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^9.0.3"
+pytest = "^9.1.1"
 pytest-asyncio = "^1.4.0"
 ruff = "^0.5.6"
 pytest-mock = "^3.15.1"
