@@ -1,18 +1,14 @@
-import dotenv
 import pytest
 from unittest.mock import AsyncMock, Mock, ANY
 from datetime import datetime, timezone
 
-from litellm import completion
-
 from vercade.agent import Agent
 from vercade.social_media import Message, SocialMedia
+from tests.judge import match
 from .conftest import LocalDiscordMcp
 
 MODELS = ["gpt-5.5"]
 REASONING_EFFORTS = ["low"]
-
-dotenv.load_dotenv()
 
 
 def get_parameters() -> list[tuple[str, str]]:
@@ -27,27 +23,6 @@ def get_parameters() -> list[tuple[str, str]]:
         for model in MODELS
         for reasoning_effort in REASONING_EFFORTS
     ]
-
-
-def match(text: str, condition: str, text_type: str = "text") -> bool:
-    text_type = text_type.lower()
-    response = completion(
-        model="gpt-5-mini",
-        reasoning_effort="low",
-        messages=[
-            {
-                "role": "user",
-                "content": f"Does the following {text_type} match the condition? Only respond with 'yes' or 'no'.\n\n{text_type.capitalize()}: {text}\n\nCondition: {condition}",
-            }
-        ],
-    )
-    answer = response["choices"][0]["message"]["content"].lower()
-    if answer == "yes":
-        return True
-    elif answer == "no":
-        return False
-    else:
-        raise ValueError(f"Invalid answer: {answer}")
 
 
 @pytest.fixture
