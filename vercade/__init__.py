@@ -1,12 +1,14 @@
+import asyncio
+import json
 import logging
 import os
-import json
 import re
-import fastmcp
+from pathlib import Path
 
-from discord import CustomActivity
 import dotenv
+import fastmcp
 import nest_asyncio
+from discord import CustomActivity
 
 from vercade.agent import Agent
 from vercade.discord import DiscordClient
@@ -88,8 +90,9 @@ async def main():
 
     # TODO(#22): Move mcp client initialization to own module
     if os.getenv("MCP_PATH"):
-        with open(os.getenv("MCP_PATH")) as f:
-            config = json.load(f)
+        config = json.loads(
+            await asyncio.to_thread(Path(os.getenv("MCP_PATH")).read_text)
+        )
         # Resolve MCP server environment variables
         for server in config["mcpServers"].values():
             for key, value in server.get("env", {}).items():

@@ -1,10 +1,12 @@
-import pytest
-from unittest.mock import AsyncMock, Mock, ANY
 from datetime import datetime, timezone
+from unittest.mock import ANY, AsyncMock, Mock
 
+import pytest
+
+from tests.judge import match
 from vercade.agent import Agent
 from vercade.social_media import Message, SocialMedia
-from tests.judge import match
+
 from .conftest import LocalDiscordMcp
 
 MODELS = ["gpt-5.5"]

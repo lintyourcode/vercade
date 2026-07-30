@@ -1,6 +1,5 @@
 import asyncio
 import re
-from typing import List, Tuple
 
 import discord
 
@@ -65,7 +64,7 @@ class DiscordClient(discord.Client, SocialMedia):
         )
 
     def _emoji_name(self, emoji: discord.PartialEmoji | discord.Emoji | str) -> str:
-        if isinstance(emoji, discord.PartialEmoji) or isinstance(emoji, discord.Emoji):
+        if isinstance(emoji, discord.PartialEmoji | discord.Emoji):
             return emoji.name
         if isinstance(emoji, str):
             return emoji
@@ -115,7 +114,7 @@ class DiscordClient(discord.Client, SocialMedia):
 
     async def _get_guild_and_channel(
         self, context: MessageContext
-    ) -> Tuple[discord.Guild, discord.TextChannel]:
+    ) -> tuple[discord.Guild, discord.TextChannel]:
         guild = discord.utils.get(self.guilds, id=context.server.id)
         if not guild:
             raise ValueError(f"Guild {context.server.id} not found")
@@ -137,8 +136,8 @@ class DiscordClient(discord.Client, SocialMedia):
 
     async def messages(
         self, context: MessageContext, limit: int = 100
-    ) -> List[Message]:
-        guild, channel = await self._get_guild_and_channel(context)
+    ) -> list[Message]:
+        _, channel = await self._get_guild_and_channel(context)
         return list(
             reversed(
                 [
@@ -153,7 +152,7 @@ class DiscordClient(discord.Client, SocialMedia):
         if not self.is_ready():
             return
 
-        guild, channel = await self._get_guild_and_channel(context)
+        _, channel = await self._get_guild_and_channel(context)
         async with channel.typing():
             await asyncio.sleep(len(message.content) / 20.0)
         await channel.send(self._format_message_for_discord(message, channel))

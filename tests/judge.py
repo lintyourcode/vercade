@@ -1,5 +1,4 @@
 import dotenv
-
 from litellm import completion
 
 dotenv.load_dotenv()

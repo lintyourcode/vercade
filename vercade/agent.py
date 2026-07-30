@@ -1,8 +1,8 @@
 import asyncio
-from functools import partial
-from datetime import datetime, timezone
 import json
-from typing import Any, Dict, List, Optional
+from datetime import datetime, timezone
+from functools import partial
+from typing import Any
 
 import fastmcp
 from litellm import ChatCompletionMessageToolCall, completion
@@ -20,10 +20,10 @@ class Agent:
         self,
         name: str,
         identity: str,
-        llm: Optional[str] = None,
-        temperature: Optional[float] = None,
-        reasoning_effort: Optional[str] = None,
-        mcp_client: Optional[fastmcp.Client] = None,
+        llm: str | None = None,
+        temperature: float | None = None,
+        reasoning_effort: str | None = None,
+        mcp_client: fastmcp.Client | None = None,
     ) -> None:
         """
         Initialize the agent.
@@ -54,20 +54,22 @@ class Agent:
         input = self._parse_input(input)
         try:
             result = await self._mcp_client.call_tool(tool_name, input)
-        except Exception as e:
+        # FastMCP re-raises arbitrary session-task errors from call_tool; any
+        # failure must reach the LLM as text instead of crashing the agent.
+        except Exception as e:  # noqa: BLE001
             return f"Error calling tool {tool_name}: {e}"
         output = json.dumps([block.model_dump() for block in result.content])
         if result.is_error:
             return f"Error calling tool {tool_name}: {output}"
         return output
 
-    def _parse_input(self, input: str) -> Dict[str, Any]:
+    def _parse_input(self, input: str) -> dict[str, Any]:
         try:
             return json.loads(input)
         except json.JSONDecodeError:
             return {"content": input}
 
-    async def _get_tools(self) -> List[Dict[str, Any]]:
+    async def _get_tools(self) -> list[dict[str, Any]]:
         if self._tools is not None:
             return self._tools
         self._tools = (
@@ -89,7 +91,7 @@ class Agent:
 
     # TODO: Update return typehint
     async def _run_tool(
-        self, tool_call: ChatCompletionMessageToolCall, functions: Dict[str, Any]
+        self, tool_call: ChatCompletionMessageToolCall, functions: dict[str, Any]
     ) -> None:
         if tool_call.function.name not in functions:
             return {

@@ -12,15 +12,17 @@ class BotIdentity:
 
 
 async def fetch_bot_identity(token: str) -> BotIdentity:
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
+    async with (
+        aiohttp.ClientSession() as session,
+        session.get(
             f"{DISCORD_API_BASE}/users/@me",
             headers={"Authorization": f"Bot {token}"},
-        ) as response:
-            if response.status != 200:
-                raise RuntimeError(
-                    f"GET /users/@me failed with status {response.status}: "
-                    f"{await response.text()}"
-                )
-            data = await response.json()
+        ) as response,
+    ):
+        if response.status != 200:
+            raise RuntimeError(
+                f"GET /users/@me failed with status {response.status}: "
+                f"{await response.text()}"
+            )
+        data = await response.json()
     return BotIdentity(id=int(data["id"]), name=data["username"])

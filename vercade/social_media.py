@@ -1,6 +1,7 @@
 from __future__ import annotations
-from typing import Awaitable, Callable, List
+
 import re
+from collections.abc import Awaitable, Callable
 from datetime import datetime
 
 
@@ -17,7 +18,7 @@ class Channel:
 
 
 class Reaction:
-    def __init__(self, emoji: str, users: List[str]) -> None:
+    def __init__(self, emoji: str, users: list[str]) -> None:
         self.emoji = emoji
         self.users = users
 
@@ -44,15 +45,15 @@ class Message:
         content: str,
         author: str,
         created_at: datetime.datetime,
-        embeds: List[Embed] = [],
-        reactions: List[Reaction] = [],
+        embeds: list[Embed] | None = None,
+        reactions: list[Reaction] | None = None,
     ) -> None:
         self._content = content
         self._author = author
         self._created_at = created_at
         self._mentions = self._MENTION_REGEX.findall(content)
-        self._embeds = embeds
-        self._reactions = reactions
+        self._embeds = embeds if embeds is not None else []
+        self._reactions = reactions if reactions is not None else []
 
     @property
     def content(self) -> str:
@@ -67,15 +68,15 @@ class Message:
         return self._created_at
 
     @property
-    def mentions(self) -> List[str]:
+    def mentions(self) -> list[str]:
         return self._mentions
 
     @property
-    def reactions(self) -> List[Reaction]:
+    def reactions(self) -> list[Reaction]:
         return self._reactions
 
     @property
-    def embeds(self) -> List[Embed]:
+    def embeds(self) -> list[Embed]:
         return self._embeds
 
     def __str__(self) -> str:
@@ -91,7 +92,7 @@ class SocialMedia:
 
     async def messages(
         self, context: MessageContext, limit: int = 100
-    ) -> List[Message]:
+    ) -> list[Message]:
         """
         Get the history of messages from the social media platform.
 

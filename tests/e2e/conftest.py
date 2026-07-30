@@ -126,7 +126,7 @@ class UserStub:
             if channel is None:
                 channel = await self._client.fetch_channel(channel_id)
             if not isinstance(channel, discord.abc.Messageable):
-                raise RuntimeError(f"Channel {channel_id} is not messageable")
+                raise TypeError(f"Channel {channel_id} is not messageable")
             await channel.send(content)
 
         self.run(_send())
@@ -221,8 +221,8 @@ def user_stub(e2e_settings: E2ESettings, e2e_server: E2EServer) -> Iterator[User
             asyncio.run_coroutine_threadsafe(client.close(), loop).result(
                 timeout=STOP_TIMEOUT_SECONDS
             )
-        except Exception:
-            pass
+        except (TimeoutError, RuntimeError, discord.DiscordException, OSError) as e:
+            print(f"Ignoring error while closing user stub client: {e}")
         loop.call_soon_threadsafe(loop.stop)
         thread.join(timeout=STOP_TIMEOUT_SECONDS)
 
