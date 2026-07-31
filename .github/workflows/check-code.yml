@@ -5,6 +5,9 @@ on:
     branches: ["main"]
     paths-ignore:
       - ".vscode"
+      - "screenshots"
+      - "AGENTS.md"
+      - "CONTRIBUTING.md"
       - "Dockerfile"
       - "LICENSE"
       - "mcp-template.json"
