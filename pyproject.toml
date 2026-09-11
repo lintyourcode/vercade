@@ -10,7 +10,7 @@ license = "GPL-3.0-or-later"
 python = "^3.11,<3.14"
 python-dotenv = "^1.2.2"
 discord = "^2.3.2"
-litellm = "^1.87.1"
+litellm = "^1.100.1"
 nest-asyncio = "^1.6.0"
 fastmcp = "3.4.4"
 
