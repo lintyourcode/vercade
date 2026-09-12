@@ -97,7 +97,13 @@ async def main():
         for server in config["mcpServers"].values():
             for key, value in server.get("env", {}).items():
                 if value.startswith("$"):
-                    server["env"][key] = os.getenv(value.lstrip("$"))
+                    variable = value.lstrip("$")
+                    resolved = os.getenv(variable)
+                    if not resolved:
+                        raise ValueError(
+                            f"{variable} environment variable must be set for MCP env '{key}'"
+                        )
+                    server["env"][key] = resolved
         mcp_client = fastmcp.Client(config)
     else:
         mcp_client = None
