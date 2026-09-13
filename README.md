@@ -120,7 +120,7 @@ MCP_PATH=mcp.json
 
 **Required MCP Servers:**
 
-* A Discord MCP server ([example](https://github.com/SaseQ/discord-mcp))
+* A Discord MCP server ([example](https://www.npmjs.com/package/@quadslab.io/discord-mcp)).
 
 **mcp.json**
 
@@ -128,10 +128,11 @@ MCP_PATH=mcp.json
 {
   "mcpServers": {
     "discord": {
-      "command": "java",
-      "args": ["-jar", "/path/to/discord-mcp.jar"],
+      "command": "npx",
+      "args": ["-y", "@quadslab.io/discord-mcp@latest"],
       "env": {
-        "DISCORD_TOKEN": "$DISCORD_TOKEN"
+        "DISCORD_TOKEN": "$DISCORD_TOKEN",
+        "DISCORD_GUILD_ID": "$DISCORD_GUILD_ID"
       }
     }
   }
