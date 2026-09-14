@@ -10,9 +10,7 @@ license = "GPL-3.0-or-later"
 python = "^3.11,<3.14"
 python-dotenv = "^1.2.2"
 discord = "^2.3.2"
-litellm = "^1.100.1"
-nest-asyncio = "^1.6.0"
-fastmcp = "^4.0.3"
+pydantic-ai-slim = {extras = ["anthropic", "bedrock", "cohere", "google", "groq", "huggingface", "mcp", "mistral", "openai"], version = "^2.43.0"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.1.1"
@@ -20,6 +18,7 @@ pytest-asyncio = "^1.4.0"
 ruff = "^0.16.0"
 pytest-mock = "^3.15.1"
 mypy = "^1.18.1"
+fastmcp = "^4.0.3"
 
 [build-system]
 requires = ["poetry-core"]

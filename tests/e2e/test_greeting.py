@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from tests.e2e.conftest import E2EChannel, E2EServer, UserStub, VercadeProcess
@@ -22,8 +24,10 @@ def test_greeting_reciprocated(
         "Vercade did not respond to the greeting within 120s. "
         f"Captured output:\n{vercade_process.dump_output()}"
     )
-    assert match(
-        reply.content,
-        "a friendly greeting in response to a user saying hello",
-        "Discord message",
+    assert asyncio.run(
+        match(
+            reply.content,
+            "a friendly greeting in response to a user saying hello",
+            "Discord message",
+        )
     )

@@ -4,7 +4,7 @@
 
 Vercade is a generic Discord bot that can:
 
-* :white_check_mark: Process Discord messages with any LLM supported by [LiteLLM](https://docs.litellm.ai/docs/providers)
+* :white_check_mark: Process Discord messages with any LLM supported by [Pydantic AI](https://ai.pydantic.dev/models/overview/)
 * :white_check_mark: Follow a custom system prompt
 * :white_check_mark: Use MCP servers to integrate with external services
 
@@ -99,9 +99,18 @@ VERCADE_ACTIVITY="Ping me!"
 
 ### Models
 
-The `VERCADE_LLM` environment variable is used to configure the bot's language model. All [LiteLLM](https://docs.litellm.ai/docs/providers) models are supported.
+The `VERCADE_LLM` environment variable is used to configure the bot's language model. It takes a [Pydantic AI](https://ai.pydantic.dev/models/overview/) model name in the form `<provider>:<model>`:
+
+```
+VERCADE_LLM=openai:gpt-5.5
+VERCADE_LLM=anthropic:claude-sonnet-5
+VERCADE_LLM=google:gemini-3.8-flash
+```
+
+The API key is read from the provider's usual environment variable (e.g. `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`). OpenAI, Anthropic, Google, Groq, Mistral, Cohere, Bedrock and Hugging Face work out of the box, as do OpenAI-compatible providers such as `openrouter`, `deepseek`, `ollama`, `together`, `fireworks` and `azure`. Other providers can be enabled by installing the matching extra, e.g. `poetry add "pydantic-ai-slim[xai]"`.
+
 * The `VERCADE_LLM_TEMPERATURE` environment variable is used to configure the LLM's temperature.
-* The `VERCADE_LLM_REASONING_EFFORT` environment variable is used to configure the LLM's reasoning effort (e.g. "low", "medium", "high").
+* The `VERCADE_LLM_REASONING_EFFORT` environment variable is used to configure the LLM's reasoning effort. It must be one of `minimal`, `low`, `medium`, `high` or `xhigh` (levels unsupported by the provider are mapped to the closest available one).
 
 ### Scheduling
 
@@ -112,7 +121,7 @@ Use `VERCADE_SCHEDULE_INTERVAL` to control background, scheduled agent execution
 
 ### MCP Servers
 
-The `MCP_PATH` environment variable is used to configure the bot's MCP servers. It should be the path to a Claude MCP JSON config file. MCP server environment variables beginning with `$` are resolved to the corresponding environment variables.
+The `MCP_PATH` environment variable is required and configures the bot's MCP servers. It should be the path to a Claude MCP JSON config file. Values in the config may reference environment variables as `${VAR}` or `${VAR:-default}`; the bot fails to start if a referenced variable is unset and has no default. Tools are exposed to the LLM prefixed with their server's name (e.g. `discord_send_message`).
 
 ```
 MCP_PATH=mcp.json
@@ -131,8 +140,8 @@ MCP_PATH=mcp.json
       "command": "npx",
       "args": ["-y", "@quadslab.io/discord-mcp@latest"],
       "env": {
-        "DISCORD_TOKEN": "$DISCORD_TOKEN",
-        "DISCORD_GUILD_ID": "$DISCORD_GUILD_ID"
+        "DISCORD_TOKEN": "${DISCORD_TOKEN}",
+        "DISCORD_GUILD_ID": "${DISCORD_GUILD_ID}"
       }
     }
   }
