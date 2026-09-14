@@ -1,14 +1,12 @@
-import asyncio
-import json
 import logging
 import os
 import re
-from pathlib import Path
 
 import dotenv
-import fastmcp
-import nest_asyncio
+import pydantic_ai
 from discord import CustomActivity
+from discord.utils import setup_logging
+from pydantic_ai.mcp import load_mcp_toolsets
 
 from vercade.agent import Agent
 from vercade.discord import DiscordClient
@@ -58,12 +56,14 @@ def _parse_schedule_interval_seconds(value: str | None) -> float | None:
 
 async def main():
     dotenv.load_dotenv()
-    nest_asyncio.apply()
+    # Vercade owns its output: skip Pydantic AI's one-time first-run banner.
+    pydantic_ai.BANNER_ENABLED = False
 
     log_level = os.getenv("VERCADE_LOG_LEVEL")
     if log_level:
         logging.basicConfig(level=log_level.upper())
-    logging.getLogger("LiteLLM").setLevel(logging.WARNING)
+    # Equivalent to what discord.Client.run() does; we use Client.start() instead.
+    setup_logging(root=False)
 
     if not os.getenv("VERCADE_NAME"):
         raise ValueError("VERCADE_NAME environment variable must be set")
@@ -88,40 +88,24 @@ async def main():
     temperature = os.getenv("VERCADE_LLM_TEMPERATURE")
     temperature = float(temperature) if temperature else None
 
-    # TODO(#22): Move mcp client initialization to own module
-    if os.getenv("MCP_PATH"):
-        config = json.loads(
-            await asyncio.to_thread(Path(os.getenv("MCP_PATH")).read_text)
-        )
-        # Resolve MCP server environment variables
-        for server in config["mcpServers"].values():
-            for key, value in server.get("env", {}).items():
-                if value.startswith("$"):
-                    variable = value.lstrip("$")
-                    resolved = os.getenv(variable)
-                    if not resolved:
-                        raise ValueError(
-                            f"{variable} environment variable must be set for MCP env '{key}'"
-                        )
-                    server["env"][key] = resolved
-        mcp_client = fastmcp.Client(config)
-    else:
-        mcp_client = None
+    if not os.getenv("MCP_PATH"):
+        raise ValueError("MCP_PATH environment variable must be set")
+    toolsets = load_mcp_toolsets(os.getenv("MCP_PATH"))
 
     schedule_interval_seconds = _parse_schedule_interval_seconds(
         os.getenv("VERCADE_SCHEDULE_INTERVAL")
     )
 
-    async with mcp_client:
-        agent = Agent(
-            name=name,
-            identity=identity,
-            llm=llm,
-            temperature=temperature,
-            reasoning_effort=os.getenv("VERCADE_LLM_REASONING_EFFORT"),
-            mcp_client=mcp_client,
-        )
-        # TODO: Rename `proctor` to `discord`
-        proctor = DiscordClient(activity=activity, friend=agent)
-        Trigger(proctor, agent, schedule_interval_seconds=schedule_interval_seconds)
-        proctor.run(discord_token)
+    agent = Agent(
+        name=name,
+        identity=identity,
+        llm=llm,
+        temperature=temperature,
+        reasoning_effort=os.getenv("VERCADE_LLM_REASONING_EFFORT") or None,
+        toolsets=toolsets,
+    )
+    # TODO: Rename `proctor` to `discord`
+    proctor = DiscordClient(activity=activity, friend=agent)
+    Trigger(proctor, agent, schedule_interval_seconds=schedule_interval_seconds)
+    async with agent, proctor:
+        await proctor.start(discord_token)
