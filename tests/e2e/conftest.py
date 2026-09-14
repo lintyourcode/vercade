@@ -45,8 +45,8 @@ MCP_CONFIG = {
             "command": "npx",
             "args": ["-y", "discord-mcp-plus"],
             "env": {
-                "DISCORD_TOKEN": "$DISCORD_TOKEN",
-                "DISCORD_GUILD_ID": "$VERCADE_E2E_GUILD_ID",
+                "DISCORD_TOKEN": "${DISCORD_TOKEN}",
+                "DISCORD_GUILD_ID": "${VERCADE_E2E_GUILD_ID}",
                 "DISCORD_MCP_TOOLS": "send_message,get_messages,list_channels",
             },
         }

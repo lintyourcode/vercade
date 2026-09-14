@@ -1,22 +1,21 @@
 import dotenv
-from litellm import completion
+from pydantic_ai import Agent
 
 dotenv.load_dotenv()
 
+# The model is checked on first use rather than at import so that offline
+# tests (which import this module) can be collected without OPENAI_API_KEY.
+_judge = Agent(
+    "openai:gpt-5-mini", model_settings={"thinking": "low"}, defer_model_check=True
+)
 
-def match(text: str, condition: str, text_type: str = "text") -> bool:
+
+async def match(text: str, condition: str, text_type: str = "text") -> bool:
     text_type = text_type.lower()
-    response = completion(
-        model="gpt-5-mini",
-        reasoning_effort="low",
-        messages=[
-            {
-                "role": "user",
-                "content": f"Does the following {text_type} match the condition? Only respond with 'yes' or 'no'.\n\n{text_type.capitalize()}: {text}\n\nCondition: {condition}",
-            }
-        ],
+    result = await _judge.run(
+        f"Does the following {text_type} match the condition? Only respond with 'yes' or 'no'.\n\n{text_type.capitalize()}: {text}\n\nCondition: {condition}"
     )
-    answer = response["choices"][0]["message"]["content"].lower()
+    answer = result.output.strip().lower()
     if answer == "yes":
         return True
     elif answer == "no":
