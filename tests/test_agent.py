@@ -16,7 +16,7 @@ from pydantic_ai.models.function import AgentInfo, FunctionModel
 from pydantic_ai.models.test import TestModel
 
 from tests.judge import match
-from vercade.agent import _USER_MESSAGE_TEMPLATE, Agent, model_settings
+from vercade.agent import _USER_MESSAGE_TEMPLATE, Agent
 from vercade.social_media import Message, SocialMedia
 
 from .conftest import local_discord_mcp
@@ -197,16 +197,33 @@ class TestFriend:
         assert social_media.react.call_args[0][1].author == "Bob#0000"
 
 
-def test_model_settings():
-    assert model_settings(None, None) == {}
-    assert model_settings(0.5, None) == {"temperature": 0.5}
-    assert model_settings(None, "low") == {"thinking": "low"}
-    assert model_settings(0.0, "high") == {"temperature": 0.0, "thinking": "high"}
+@pytest.mark.parametrize(
+    ("temperature", "reasoning_effort", "expected"),
+    [
+        (None, None, {}),
+        (0.5, None, {"temperature": 0.5}),
+        (None, "low", {"thinking": "low"}),
+        (0.0, "high", {"temperature": 0.0, "thinking": "high"}),
+        (None, "extreme", {"thinking": "extreme"}),
+    ],
+)
+def test_model_settings_are_passed_to_pydantic_ai(
+    mocker,
+    temperature: float | None,
+    reasoning_effort: str | None,
+    expected: dict[str, object],
+):
+    pydantic_agent = mocker.patch("vercade.agent.PydanticAgent")
 
+    Agent(
+        name="Proctor",
+        identity="You are Proctor.",
+        llm=TestModel(),
+        temperature=temperature,
+        reasoning_effort=reasoning_effort,
+    )
 
-def test_model_settings_with_invalid_reasoning_effort_raises():
-    with pytest.raises(ValueError, match="VERCADE_LLM_REASONING_EFFORT must be one of"):
-        model_settings(None, "extreme")
+    assert pydantic_agent.call_args.kwargs["model_settings"] == expected
 
 
 class TestFriendOffline:

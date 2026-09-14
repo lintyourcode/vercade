@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from datetime import datetime, timezone
-from typing import Self, cast, get_args
+from typing import Self, cast
 
 from pydantic_ai import Agent as PydanticAgent
 from pydantic_ai import RetryPromptPart, TextPart, ToolCallPart, ToolReturnPart
@@ -11,25 +11,6 @@ from pydantic_ai.usage import UsageLimits
 
 # TODO: Make social media-specific
 _USER_MESSAGE_TEMPLATE = "{event} The current date and time is {date_time}. You may use any tools available to you, or do nothing at all. The user cannot see your responses directly, so you must use the tools if you would like to respond to the user. Take your time and think carefully before responding. When you are done, finish by replying with a concise summary of the actions you took (or say that you took none)."
-
-
-def model_settings(
-    temperature: float | None, reasoning_effort: str | None
-) -> ModelSettings:
-    """
-    Build Pydantic AI model settings from the `VERCADE_LLM_*` options.
-    """
-
-    settings = ModelSettings()
-    if temperature is not None:
-        settings["temperature"] = temperature
-    if reasoning_effort is not None:
-        if reasoning_effort not in get_args(ThinkingEffort):
-            raise ValueError(
-                f"VERCADE_LLM_REASONING_EFFORT must be one of {', '.join(get_args(ThinkingEffort))}, not {reasoning_effort!r}"
-            )
-        settings["thinking"] = cast(ThinkingEffort, reasoning_effort)
-    return settings
 
 
 class Agent:
@@ -61,11 +42,17 @@ class Agent:
         if not identity:
             raise ValueError("identity must be a non-empty string")
 
+        model_settings = ModelSettings()
+        if temperature is not None:
+            model_settings["temperature"] = temperature
+        if reasoning_effort is not None:
+            model_settings["thinking"] = cast(ThinkingEffort, reasoning_effort)
+
         self.name = name
         self._agent = PydanticAgent(
             llm,
             instructions=identity,
-            model_settings=model_settings(temperature, reasoning_effort),
+            model_settings=model_settings,
             toolsets=toolsets,
             # Tool errors are sent back to the LLM as retry prompts; a large
             # budget keeps the run going rather than aborting after one error.
