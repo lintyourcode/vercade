@@ -2,12 +2,15 @@
 
 ## Project Structure
 - `vercade/` — Python package.
-  - `agent.py` LLM agent that can call MCP tools.
+  - `agent.py` Pydantic AI agent wrapper; maps `VERCADE_LLM_*` settings and calls MCP tools via `MCPToolset`.
   - `discord.py` Discord client adapting the platform to the `SocialMedia` interface.
   - `trigger.py` invokes the agent on a schedule or in response to a message.
   - `social_media.py` shared data models and interfaces.
+  - `__init__.py` `main()`: env parsing, MCP config loading via `load_mcp_toolsets` (`${VAR}` expansion), wiring.
   - `__main__.py` entrypoint (`python -m vercade`).
 - `tests/` — pytest suite.
+  - `conftest.py` — in‑process FastMCP server with Discord‑like tools for agent tests.
+  - `judge.py` — LLM judge (`match`, async) used by live tests.
   - `e2e/` — end‑to‑end tests.
 - `.github/workflows/check-code.yml` — CI: ruff lint/format + pytest on 3.11/3.12.
 - `pyproject.toml` — Poetry config, dependencies, pytest settings.
@@ -31,7 +34,7 @@
 ## Testing Guidelines
 - Frameworks: `pytest`, `pytest-asyncio` (asyncio mode is auto via `pyproject.toml`).
 - Test layout: unit tests in `tests/test_*.py`, end‑to‑end tests in `tests/e2e/test_*.py`; place shared helpers in `tests/conftest.py` or `tests/e2e/conftest.py`.
-- Environment: some tests call LLMs; export `OPENAI_API_KEY` (CI uses a secret).
+- Environment: some tests call LLMs; export `OPENAI_API_KEY` (CI uses a secret). Prefer offline tests with Pydantic AI's `TestModel`/`FunctionModel` where the LLM's judgement isn't under test.
 
 ## Commit Guidelines
 - Follow Conventional Commits: `feat(agent): …`, `fix(discord): …`, `refactor(trigger): …`.
@@ -41,4 +44,4 @@
 - Docs policy: update `README.md` only with user‑facing changes; update `CONTRIBUTING.md` for technical/architectural changes; keep `AGENTS.md` in sync when guidelines change.
 
 ## Security
-- Never commit real tokens. Start from `template.env` → `.env`; set `DISCORD_TOKEN`, `DISCORD_GUILD_ID`, `VERCADE_NAME`, `VERCADE_IDENTITY`, `VERCADE_LLM`, and optional `VERCADE_LLM_TEMPERATURE`/`VERCADE_LLM_REASONING_EFFORT`.
+- Never commit real tokens. Start from `template.env` → `.env`; set `DISCORD_TOKEN`, `DISCORD_GUILD_ID`, `VERCADE_NAME`, `VERCADE_IDENTITY`, `VERCADE_LLM` (Pydantic AI `<provider>:<model>`), and optional `VERCADE_LLM_TEMPERATURE`/`VERCADE_LLM_REASONING_EFFORT`.
