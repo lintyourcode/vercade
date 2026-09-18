@@ -23,8 +23,8 @@ class Trigger:
         schedule_interval_seconds: float | None = None,
     ) -> None:
         self._agent = friend
-        # TODO(#14): Type `response_tasks` as `dict[int, dict[int, asyncio.Task]]`
-        self._response_tasks: dict[int, dict[str, asyncio.Task]] = {}
+        # Keyed by channel id, which is unique across all of Discord.
+        self._response_tasks: dict[int, asyncio.Task] = {}
         # TODO: Remove unused `schedule_task`
         self._schedule_task: asyncio.Task | None = None
         self._scheduled_tasks: dict[str, asyncio.Task] = {}
@@ -59,13 +59,14 @@ class Trigger:
         if self._schedule_interval_seconds and self._schedule_interval_seconds > 0:
             self._schedule_task = asyncio.create_task(self._run_idle())
 
-    def _remove_response_task(self, guild_id: int, channel_id: int) -> None:
-        if not self._response_tasks.get(guild_id, {}).get(channel_id):
-            return
-
-        del self._response_tasks[guild_id][channel_id]
-        if len(self._response_tasks[guild_id]) == 0:
-            del self._response_tasks[guild_id]
+    def _describe(self, message: discord.Message) -> str:
+        guild = message.guild
+        channel = message.channel
+        if guild is None:
+            # Direct message. DM channels have no name, so identify the
+            # conversation by the other participant, like Discord does.
+            return f"You received a direct message on Discord from {message.author.name} (in the DM channel with id {channel.id})."
+        return f"You received a message in the Discord server {guild.name} (with id {guild.id}) and channel {channel.name} (with id {channel.id})."
 
     async def read_message(self, message: discord.Message) -> None:
         """
@@ -75,12 +76,11 @@ class Trigger:
             message: New message to respond to.
         """
 
-        guild = message.guild
-        channel = message.channel
+        channel_id = message.channel.id
 
         # If we're already working on a response to a previous message in the
         # same channel, cancel it
-        task = self._response_tasks.get(guild.id, {}).get(channel.id)
+        task = self._response_tasks.get(channel_id)
         if task and not task.done():
             task.cancel()
             # Ensure the task is actually cancelled before proceeding to avoid duplicate sends
@@ -88,14 +88,7 @@ class Trigger:
                 await task
             except asyncio.CancelledError:
                 pass
-            self._remove_response_task(guild.id, channel.id)
 
-        task = asyncio.create_task(
-            self._agent(
-                f"You received a message in the Discord server {guild.name} (with id {guild.id}) and channel {channel.name} (with id {channel.id})."
-            )
-        )
-        self._response_tasks.setdefault(guild.id, {})[channel.id] = task
-        task.add_done_callback(
-            lambda task: self._remove_response_task(guild.id, channel.id)
-        )
+        task = asyncio.create_task(self._agent(self._describe(message)))
+        self._response_tasks[channel_id] = task
+        task.add_done_callback(lambda _: self._response_tasks.pop(channel_id, None))
