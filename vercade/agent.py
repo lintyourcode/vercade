@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Sequence
 from datetime import datetime, timezone
 from typing import Self, cast
@@ -8,6 +9,8 @@ from pydantic_ai.models import Model
 from pydantic_ai.settings import ModelSettings, ThinkingEffort
 from pydantic_ai.toolsets import AbstractToolset
 from pydantic_ai.usage import UsageLimits
+
+logger = logging.getLogger(__name__)
 
 # TODO: Make social media-specific
 _USER_MESSAGE_TEMPLATE = "{event} The current date and time is {date_time}. You may use any tools available to you, or do nothing at all. The user cannot see your responses directly, so you must use the tools if you would like to respond to the user. Take your time and think carefully before responding. When you are done, finish by replying with a concise summary of the actions you took (or say that you took none)."
@@ -74,6 +77,7 @@ class Agent:
             event: Natural language description of the event.
         """
 
+        logger.debug("Starting agent")
         result = await self._agent.run(
             _USER_MESSAGE_TEMPLATE.format(
                 event=event,
@@ -83,24 +87,31 @@ class Agent:
             ),
             usage_limits=UsageLimits(request_limit=None),
         )
+        logger.debug("Agent done.")
 
+        logger.info("AGENT LOGS")
         tool_calls: dict[str, ToolCallPart] = {}
         for message in result.new_messages():
             for part in message.parts:
                 if isinstance(part, TextPart):
-                    print(f"Thought: {part.content}")
+                    logger.info("[Thought] %s", part.content)
                 elif isinstance(part, ToolCallPart):
                     tool_calls[part.tool_call_id] = part
-                    print(f"Calling tool {part.tool_name} with {part.args}")
                 elif isinstance(part, ToolReturnPart):
                     args = tool_calls[part.tool_call_id].args
-                    print(
-                        f"Tool {part.tool_name} called with {args} returned {part.model_response_str()}"
+                    logger.info(
+                        "[Tool] %s called with %s returned %s",
+                        part.tool_name,
+                        args,
+                        part.model_response_str(),
                     )
                 elif isinstance(part, RetryPromptPart) and part.tool_name:
                     args = tool_calls[part.tool_call_id].args
-                    print(
-                        f"Tool {part.tool_name} called with {args} returned {part.model_response()}"
+                    logger.warning(
+                        "[Tool] %s called with %s failed, retry recommended: %s",
+                        part.tool_name,
+                        args,
+                        part.model_response(),
                     )
         if not tool_calls:
             raise ValueError(f"No tools were called\n\n{result.output}")
