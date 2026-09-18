@@ -308,7 +308,6 @@ def vercade_process(
     config_path.write_text(json.dumps(MCP_CONFIG))
 
     env = os.environ.copy() | {
-        "VERCADE_NAME": e2e_server.vercade_name,
         "VERCADE_IDENTITY": (
             f"You are {e2e_server.vercade_name}, a helpful and friendly chatbot."
         ),

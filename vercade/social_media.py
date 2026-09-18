@@ -86,6 +86,8 @@ class Message:
 class SocialMedia:
     def __init__(self) -> None:
         self.on_ready_callback: Callable[[], Awaitable[None]] | None = None
+        # Invoked for messages from other users; adapters must not forward
+        # the bot's own messages.
         self.on_message_callback: (
             Callable[[MessageContext, Message], Awaitable[None]] | None
         ) = None

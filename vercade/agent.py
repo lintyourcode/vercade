@@ -24,7 +24,6 @@ class Agent:
 
     def __init__(
         self,
-        name: str,
         identity: str,
         llm: str | Model,
         temperature: float | None = None,
@@ -36,7 +35,6 @@ class Agent:
         Initialize the agent.
 
         Args:
-            name: Human-readable name of the agent.
             identity: Natural language description of the agent.
             llm: LLM to use for the agent, as a Pydantic AI `<provider>:<model>` name or model.
             temperature: Temperature to use for the agent's LLM.
@@ -54,7 +52,6 @@ class Agent:
         if reasoning_effort is not None:
             model_settings["thinking"] = cast(ThinkingEffort, reasoning_effort)
 
-        self.name = name
         self._agent = PydanticAgent(
             llm,
             instructions=identity,

@@ -46,4 +46,4 @@
 - Docs policy: update `README.md` only with user‑facing changes; update `CONTRIBUTING.md` for technical/architectural changes; keep `AGENTS.md` in sync when guidelines change.
 
 ## Security
-- Never commit real tokens. Start from `template.env` → `.env`; set `DISCORD_TOKEN`, `DISCORD_GUILD_ID`, `VERCADE_NAME`, `VERCADE_IDENTITY`, `VERCADE_LLM` (Pydantic AI `<provider>:<model>`), and optional `VERCADE_LLM_TEMPERATURE`/`VERCADE_LLM_REASONING_EFFORT`.
+- Never commit real tokens. Start from `template.env` → `.env`; set `DISCORD_TOKEN`, `DISCORD_GUILD_ID`, `VERCADE_IDENTITY`, `VERCADE_LLM` (Pydantic AI `<provider>:<model>`), and optional `VERCADE_LLM_TEMPERATURE`/`VERCADE_LLM_REASONING_EFFORT`.

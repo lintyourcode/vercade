@@ -66,10 +66,6 @@ async def main():
     # Equivalent to what discord.Client.run() does; we use Client.start() instead.
     setup_logging(root=False)
 
-    if not os.getenv("VERCADE_NAME"):
-        raise ValueError("VERCADE_NAME environment variable must be set")
-    name = os.getenv("VERCADE_NAME")
-
     if not os.getenv("VERCADE_IDENTITY"):
         raise ValueError("VERCADE_IDENTITY environment variable must be set")
     identity = os.getenv("VERCADE_IDENTITY")
@@ -100,7 +96,6 @@ async def main():
     )
 
     agent = Agent(
-        name=name,
         identity=identity,
         llm=llm,
         temperature=temperature,

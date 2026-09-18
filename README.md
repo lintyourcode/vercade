@@ -76,10 +76,6 @@ Now, you should be able to invite the bot to your server and start chatting.
 
 ## Configuration
 
-### Name
-
-The `VERCADE_NAME` environment variable is used to configure the bot's name. It must match the name of the Discord bot.
-
 ### Identity
 
 The `VERCADE_IDENTITY` environment variable is used to configure the bot's personality and behavior. A simple identity might look like this:

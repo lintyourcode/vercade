@@ -71,11 +71,6 @@ class DiscordClient(discord.Client, SocialMedia):
         raise ValueError(f"Unknown emoji type: {type(emoji)}")
 
     async def on_ready(self) -> None:
-        if self._agent.name != self.user.name:
-            raise ValueError(
-                f"Friend name {self._agent.name} does not match Discord bot name {self.user.name}"
-            )
-
         if self._activity:
             await self.change_presence(activity=self._activity)
 
@@ -100,6 +95,9 @@ class DiscordClient(discord.Client, SocialMedia):
         return content
 
     async def on_message(self, message: discord.Message) -> None:
+        if message.author == self.user:
+            return
+
         if self.on_message_callback:
             server = Server(id=message.guild.id, name=message.guild.name)
             channel = Channel(id=message.channel.id, name=message.channel.name)

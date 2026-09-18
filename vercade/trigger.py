@@ -75,9 +75,6 @@ class Trigger:
             message: New message to respond to.
         """
 
-        if message.author == self._agent.name:
-            return
-
         # If we're already working on a response to a previous message in the
         # same channel, cancel it
         task = self._response_tasks.get(context.server.id, {}).get(context.channel.id)

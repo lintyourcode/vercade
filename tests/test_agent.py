@@ -61,7 +61,6 @@ def make_friend(
     capabilities: Sequence[AgentCapability] = (),
 ) -> Agent:
     return Agent(
-        name="Proctor",
         identity=identity,
         llm=llm,
         reasoning_effort=reasoning_effort,
@@ -253,7 +252,6 @@ def test_model_settings_are_passed_to_pydantic_ai(
     pydantic_agent = mocker.patch("vercade.agent.PydanticAgent")
 
     Agent(
-        name="Proctor",
         identity="You are Proctor.",
         llm=TestModel(),
         temperature=temperature,
@@ -281,7 +279,6 @@ class TestFriendOffline:
             return ModelResponse(parts=[TextPart("I have nothing to say.")])
 
         friend = Agent(
-            name="Proctor",
             identity="You are Proctor.",
             llm=FunctionModel(respond),
             temperature=0.5,
@@ -298,7 +295,6 @@ class TestFriendOffline:
 
     async def test__call__without_tool_calls_raises(self):
         friend = Agent(
-            name="Proctor",
             identity="You are Proctor.",
             llm=TestModel(custom_output_text="I have nothing to say."),
         )
