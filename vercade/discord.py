@@ -1,18 +1,11 @@
+from collections.abc import Awaitable, Callable
+
 import discord
 
 from vercade.agent import Agent
-from vercade.social_media import (
-    Channel,
-    Embed,
-    Message,
-    MessageContext,
-    Reaction,
-    Server,
-    SocialMedia,
-)
 
 
-class DiscordClient(discord.Client, SocialMedia):
+class DiscordClient(discord.Client):
     def __init__(
         self,
         *,
@@ -21,10 +14,7 @@ class DiscordClient(discord.Client, SocialMedia):
         loop=None,
         **options,
     ) -> None:
-        discord.Client.__init__(
-            self, loop=loop, intents=discord.Intents.default(), **options
-        )
-        SocialMedia.__init__(self)
+        super().__init__(loop=loop, intents=discord.Intents.default(), **options)
 
         if not friend:
             raise ValueError("please provide a Friend instance")
@@ -33,39 +23,12 @@ class DiscordClient(discord.Client, SocialMedia):
         self._activity = activity
         self._agent = friend
 
-    async def _discord_message_to_message(self, message: discord.Message) -> Message:
-        content = message.system_content
-
-        # Replace Discord mentions with @username mentions
-        for mention in message.mentions:
-            content = content.replace(mention.mention, f"@{mention.name}")
-
-        reactions = []
-        for reaction in message.reactions:
-            users = []
-            async for user in reaction.users():
-                users.append(user.name)
-            reactions.append(
-                Reaction(
-                    emoji=self._emoji_name(reaction.emoji),
-                    users=users,
-                )
-            )
-
-        return Message(
-            content=content,
-            author=message.author.name,
-            created_at=message.created_at,
-            embeds=[Embed(url=embed.url) for embed in message.embeds],
-            reactions=reactions,
-        )
-
-    def _emoji_name(self, emoji: discord.PartialEmoji | discord.Emoji | str) -> str:
-        if isinstance(emoji, discord.PartialEmoji | discord.Emoji):
-            return emoji.name
-        if isinstance(emoji, str):
-            return emoji
-        raise ValueError(f"Unknown emoji type: {type(emoji)}")
+        self.on_ready_callback: Callable[[], Awaitable[None]] | None = None
+        # Invoked for messages from other users; the bot's own messages are
+        # never forwarded.
+        self.on_message_callback: (
+            Callable[[discord.Message], Awaitable[None]] | None
+        ) = None
 
     async def on_ready(self) -> None:
         if self._activity:
@@ -79,37 +42,4 @@ class DiscordClient(discord.Client, SocialMedia):
             return
 
         if self.on_message_callback:
-            server = Server(id=message.guild.id, name=message.guild.name)
-            channel = Channel(id=message.channel.id, name=message.channel.name)
-            await self.on_message_callback(
-                MessageContext(
-                    social_media=self,
-                    server=server,
-                    channel=channel,
-                ),
-                await self._discord_message_to_message(message),
-            )
-
-    async def _get_guild_and_channel(
-        self, context: MessageContext
-    ) -> tuple[discord.Guild, discord.TextChannel]:
-        guild = discord.utils.get(self.guilds, id=context.server.id)
-        if not guild:
-            raise ValueError(f"Guild {context.server.id} not found")
-        channel = discord.utils.get(guild.text_channels, name=context.channel.name)
-        if not channel:
-            raise ValueError(f"Channel {context.channel.id} not found")
-        return guild, channel
-
-    async def messages(
-        self, context: MessageContext, limit: int = 100
-    ) -> list[Message]:
-        _, channel = await self._get_guild_and_channel(context)
-        return list(
-            reversed(
-                [
-                    await self._discord_message_to_message(message)
-                    async for message in channel.history(limit=limit)
-                ]
-            )
-        )
+            await self.on_message_callback(message)

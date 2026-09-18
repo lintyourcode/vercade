@@ -4,9 +4,8 @@
 - `vercade/` — Python package.
   - `agent.py` Pydantic AI agent wrapper; maps `VERCADE_LLM_*` settings and calls MCP tools via `MCPToolset`.
   - `skills.py` discovers Agent Skills in the standard locations and wraps them in `pydantic_ai_harness.Skills`.
-  - `discord.py` Discord client adapting the platform to the `SocialMedia` interface.
+  - `discord.py` Discord client exposing `on_ready`/`on_message` callbacks.
   - `trigger.py` invokes the agent on a schedule or in response to a message.
-  - `social_media.py` shared data models and interfaces.
   - `__init__.py` `main()`: env parsing, MCP config loading via `load_mcp_toolsets` (`${VAR}` expansion), wiring.
   - `__main__.py` entrypoint (`python -m vercade`).
 - `tests/` — pytest suite.
@@ -31,7 +30,7 @@
 - Python 3.11-3.13, 4‑space indent, type hints encouraged.
 - Write correct, simple, clear, high-quality code.
 - Naming: modules/functions `snake_case`, classes `PascalCase`, constants `UPPER_CASE`.
-- Keep async flows consistent with existing patterns (e.g., `asyncio.create_task`, callbacks in `SocialMedia`).
+- Keep async flows consistent with existing patterns (e.g., `asyncio.create_task`, callbacks on `DiscordClient`).
 - Use ruff for both linting and formatting; commits should be ruff‑clean.
 
 ## Testing Guidelines
