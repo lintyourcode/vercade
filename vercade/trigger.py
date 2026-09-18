@@ -21,8 +21,8 @@ class Trigger:
         schedule_interval_seconds: float | None = None,
     ) -> None:
         self._agent = friend
-        # TODO(#14): Type `response_tasks` as `dict[int, dict[int, asyncio.Task]]`
-        self._response_tasks: dict[int, dict[str, asyncio.Task]] = {}
+        # Outer key is the Discord guild id, or None for direct messages.
+        self._response_tasks: dict[int | None, dict[int, asyncio.Task]] = {}
         # TODO: Remove unused `schedule_task`
         self._schedule_task: asyncio.Task | None = None
         self._scheduled_tasks: dict[str, asyncio.Task] = {}
@@ -58,13 +58,30 @@ class Trigger:
         if self._schedule_interval_seconds and self._schedule_interval_seconds > 0:
             self._schedule_task = asyncio.create_task(self._run_idle())
 
+    def _server_key(self, context: MessageContext) -> int | None:
+        return None if context.server is None else context.server.id
+
     def _remove_response_task(self, context: MessageContext) -> None:
-        if not self._response_tasks.get(context.server.id, {}).get(context.channel.id):
+        server_id = self._server_key(context)
+        if not self._response_tasks.get(server_id, {}).get(context.channel.id):
             return
 
-        del self._response_tasks[context.server.id][context.channel.id]
-        if len(self._response_tasks[context.server.id]) == 0:
-            del self._response_tasks[context.server.id]
+        del self._response_tasks[server_id][context.channel.id]
+        if len(self._response_tasks[server_id]) == 0:
+            del self._response_tasks[server_id]
+
+    def _event_for_message(self, context: MessageContext) -> str:
+        if context.server is None:
+            return (
+                "You received a direct message in Discord channel "
+                f"{context.channel.name} (with id {context.channel.id}). "
+                "There is no Discord server associated with this message."
+            )
+        return (
+            f"You received a message in the Discord server {context.server.name} "
+            f"(with id {context.server.id}) and channel {context.channel.name} "
+            f"(with id {context.channel.id})."
+        )
 
     async def read_message(self, context: MessageContext, message: Message) -> None:
         """
@@ -77,7 +94,8 @@ class Trigger:
 
         # If we're already working on a response to a previous message in the
         # same channel, cancel it
-        task = self._response_tasks.get(context.server.id, {}).get(context.channel.id)
+        server_id = self._server_key(context)
+        task = self._response_tasks.get(server_id, {}).get(context.channel.id)
         if task and not task.done():
             task.cancel()
             # Ensure the task is actually cancelled before proceeding to avoid duplicate sends
@@ -87,14 +105,8 @@ class Trigger:
                 pass
             self._remove_response_task(context)
 
-        task = asyncio.create_task(
-            self._agent(
-                f"You received a message in the Discord server {context.server.name} (with id {context.server.id}) and channel {context.channel.name} (with id {context.channel.id})."
-            )
-        )
-        self._response_tasks.setdefault(context.server.id, {})[context.channel.id] = (
-            task
-        )
+        task = asyncio.create_task(self._agent(self._event_for_message(context)))
+        self._response_tasks.setdefault(server_id, {})[context.channel.id] = task
         task.add_done_callback(
             lambda task, context=context: self._remove_response_task(context)
         )

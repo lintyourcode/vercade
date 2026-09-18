@@ -71,7 +71,7 @@ docker build -t vercade .
 docker run --env-file .env --init --privileged vercade
 ```
 
-Now, you should be able to invite the bot to your server and start chatting.
+Now, you should be able to invite the bot to your server and start chatting, including by direct message.
 
 ## Configuration
 

@@ -30,9 +30,13 @@ class Embed:
 
 class MessageContext:
     def __init__(
-        self, social_media: SocialMedia, server: Server, channel: Channel
+        self,
+        social_media: SocialMedia,
+        server: Server | None,
+        channel: Channel,
     ) -> None:
         self.social_media = social_media
+        # None for direct messages and other private channels with no guild.
         self.server = server
         self.channel = channel
 
