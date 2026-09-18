@@ -1,6 +1,7 @@
 # Vercade
 
 [![Discord](https://img.shields.io/badge/Discord-5865F2?style=flat&logo=discord&logoColor=white)](https://discord.gg/4fcsGm9sqj)
+[![Vercade - Featured on AI Agents Directory](https://img.shields.io/badge/AI%20Agents%20Directory-Featured-5865F2?style=flat)](https://aiagentsdirectory.com/agent/vercade "Discover Vercade on AI Agents Directory")
 
 Vercade is a generic Discord bot that can:
 
