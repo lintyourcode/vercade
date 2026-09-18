@@ -5,7 +5,7 @@
   - `agent.py` Pydantic AI agent wrapper; maps `VERCADE_LLM_*` settings and calls MCP tools via `MCPToolset`.
   - `skills.py` discovers Agent Skills in the standard locations and wraps them in `pydantic_ai_harness.Skills`.
   - `discord.py` Discord client adapting the platform to the `SocialMedia` interface.
-  - `trigger.py` invokes the agent on a schedule or in response to a message.
+  - `trigger.py` invokes the agent on a schedule or in response to a message; parses `VERCADE_SCHEDULE_INTERVAL`.
   - `social_media.py` shared data models and interfaces.
   - `__init__.py` `main()`: env parsing, MCP config loading via `load_mcp_toolsets` (`${VAR}` expansion), wiring.
   - `__main__.py` entrypoint (`python -m vercade`).

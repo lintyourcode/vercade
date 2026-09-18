@@ -113,7 +113,7 @@ The API key is read from the provider's usual environment variable (e.g. `OPENAI
 Use `VERCADE_SCHEDULE_INTERVAL` to control background, scheduled agent execution. The agent will always respond when messaged regardless of this setting.
 
 - **Default**: `disabled` (no scheduling)
-- **Enable**: set to a number of seconds, or a suffix like `15m`, `2h`, etc.
+- **Enable**: set to a number of seconds, or a duration like `15m`, `2h`, or `1h30m`.
 
 ### MCP Servers
 

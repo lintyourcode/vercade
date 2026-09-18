@@ -1,6 +1,5 @@
 import logging
 import os
-import re
 
 import dotenv
 import pydantic_ai
@@ -11,48 +10,7 @@ from pydantic_ai.mcp import load_mcp_toolsets
 from vercade.agent import Agent
 from vercade.discord import DiscordClient
 from vercade.skills import load_skills
-from vercade.trigger import Trigger
-
-
-# TODO(#22): Move outside of __init__.py
-def _parse_schedule_interval_seconds(value: str | None) -> float | None:
-    """
-    Parse VERCADE_SCHEDULE_INTERVAL into seconds.
-
-    Supports raw seconds (e.g. "300"), or suffixed values like "15m", "2h", "45s".
-    Disable scheduling with "disabled".
-    Returns None to indicate disabled.
-    """
-
-    if value is None:
-        return None
-
-    normalized = value.strip().lower()
-    if normalized in {"", "disabled"}:
-        return None
-
-    # Plain seconds
-    try:
-        return float(normalized)
-    except ValueError:
-        pass
-
-    match = re.fullmatch(r"(\d+(?:\.\d*)?)([smh])", normalized)
-    if not match:
-        raise ValueError(
-            "VERCADE_SCHEDULE_INTERVAL must be a number of seconds or end with s/m/h (e.g. '300', '15m', '2h', or 'disabled')"
-        )
-
-    amount = float(match.group(1))
-    unit = match.group(2)
-    if unit == "s":
-        return amount
-    if unit == "m":
-        return amount * 60.0
-    if unit == "h":
-        return amount * 60.0 * 60.0
-    # Should never reach here due to regex
-    raise ValueError("Invalid schedule interval unit")
+from vercade.trigger import Trigger, parse_schedule_interval_seconds
 
 
 async def main():
@@ -91,7 +49,7 @@ async def main():
 
     skills = load_skills()
 
-    schedule_interval_seconds = _parse_schedule_interval_seconds(
+    schedule_interval_seconds = parse_schedule_interval_seconds(
         os.getenv("VERCADE_SCHEDULE_INTERVAL")
     )
 

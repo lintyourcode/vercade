@@ -1,8 +1,38 @@
 import asyncio
 import uuid
 
+import durationpy
+
 from vercade.agent import Agent
 from vercade.social_media import Message, MessageContext, SocialMedia
+
+
+def parse_schedule_interval_seconds(value: str | None) -> float | None:
+    """Parse VERCADE_SCHEDULE_INTERVAL into seconds.
+
+    ``None``, empty, and ``disabled`` turn scheduling off. Other values are
+    Go-style durations (``15m``, ``2h``, ``1h30m``) or a bare number of seconds.
+    """
+
+    if value is None:
+        return None
+
+    normalized = value.strip().lower()
+    if normalized in {"", "disabled"}:
+        return None
+
+    try:
+        return durationpy.from_str(normalized).total_seconds()
+    except durationpy.DurationError:
+        pass
+
+    try:
+        return float(normalized)
+    except ValueError:
+        raise ValueError(
+            "VERCADE_SCHEDULE_INTERVAL must be a duration such as "
+            "'300', '15m', '2h', or 'disabled'"
+        ) from None
 
 
 class Trigger:
