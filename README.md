@@ -3,14 +3,12 @@
 [![Discord](https://img.shields.io/badge/Discord-5865F2?style=flat&logo=discord&logoColor=white)](https://discord.gg/4fcsGm9sqj)
 [![Vercade - Featured on AI Agents Directory](https://img.shields.io/badge/AI%20Agents%20Directory-Featured-5865F2?style=flat)](https://aiagentsdirectory.com/agent/vercade "Discover Vercade on AI Agents Directory")
 
-Vercade is a generic Discord bot that can:
+Vercade is a minimal, self-hosted Discord bot for building AI automations. Give it instructions and connect your tools to automate moderation, customer support, and other community tasks.
 
-* :white_check_mark: Process Discord messages with any LLM supported by [Pydantic AI](https://ai.pydantic.dev/models/overview/)
-* :white_check_mark: Follow a custom system prompt
-* :white_check_mark: Use MCP servers to integrate with external services
-* :white_check_mark: Use [Agent Skills](https://agentskills.io) installed on the host
-
-When setting up vercade, you'll attach it to a Discord bot and add the bot to some servers. Whenever a message is sent in a server, vercade will invoke an LLM agent. The agent has access to whichever MCP servers you've configured. It will call whichever tools it needs to, based on a system prompt.
+* **Choose your model:** Use any LLM supported by [Pydantic AI](https://ai.pydantic.dev/models/overview/).
+* **Connect external services:** Give the agent tools through MCP servers so it can take action, not just reply.
+* **Define its behavior:** Set a custom system prompt and add reusable instructions with [Agent Skills](https://agentskills.io).
+* **Automate beyond chat:** Run the agent when messages arrive or on a schedule for recurring tasks.
 
 ## Disclaimer
 
