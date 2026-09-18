@@ -27,6 +27,7 @@
 
 ## Style Guidelines
 - Python 3.11-3.13, 4‑space indent, type hints encouraged.
+- Write correct, simple, clear, high-quality code.
 - Naming: modules/functions `snake_case`, classes `PascalCase`, constants `UPPER_CASE`.
 - Keep async flows consistent with existing patterns (e.g., `asyncio.create_task`, callbacks in `SocialMedia`).
 - Use ruff for both linting and formatting; commits should be ruff‑clean.
