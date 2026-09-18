@@ -47,7 +47,7 @@ graph LR
 * **Trigger**: Invokes the agent both when a message is received and on a schedule
 * **Agent**: Thin wrapper around a Pydantic AI agent: builds the system prompt (the identity) and user prompt (the event), maps `VERCADE_LLM_TEMPERATURE`/`VERCADE_LLM_REASONING_EFFORT` to model settings, and exposes the user-provided MCP servers as toolsets and skills as capabilities. MCP tool errors are sent back to the LLM as retry prompts with a large per-tool retry budget (`retries=50`) so a failing tool call doesn't abort the run.
 
-**Tests:** `tests/test_skills.py` covers skill directory discovery. `tests/test_agent.py` contains both offline tests (Pydantic AI's `TestModel`/`FunctionModel`) and live LLM tests (require `OPENAI_API_KEY`). `tests/conftest.py` provides an in-process FastMCP server with Discord-like tools backed by a mocked `SocialMedia`, so the real MCP code path is exercised without a subprocess.
+**Tests:** Unit tests (`tests/test_*.py`) are fully offline and use Pydantic AI's `TestModel`/`FunctionModel`: `tests/test_agent.py` covers prompt construction and model settings, `tests/test_skills.py` covers skill directory discovery. Everything that needs a real LLM or Discord lives in the end-to-end suite below; `tests/judge.py` provides the LLM judge (`match`) those tests use to grade replies.
 
 ## End-to-end tests
 

@@ -10,8 +10,8 @@
   - `__init__.py` `main()`: env parsing, MCP config loading via `load_mcp_toolsets` (`${VAR}` expansion), wiring.
   - `__main__.py` entrypoint (`python -m vercade`).
 - `tests/` — pytest suite.
-  - `conftest.py` — in‑process FastMCP server with Discord‑like tools for agent tests.
-  - `judge.py` — LLM judge (`match`, async) used by live tests.
+  - `test_*.py` — offline unit tests (Pydantic AI `TestModel`/`FunctionModel`).
+  - `judge.py` — LLM judge (`match`, async) used by end‑to‑end tests.
   - `e2e/` — end‑to‑end tests against the real bot and Discord; `conftest.py` provides the `chat` fixture.
 - `.github/workflows/check-code.yml` — CI: ruff lint/format + pytest on 3.11/3.12.
 - `pyproject.toml` — Poetry config, dependencies, pytest settings.
@@ -36,8 +36,8 @@
 
 ## Testing Guidelines
 - Frameworks: `pytest`, `pytest-asyncio` (asyncio mode is auto via `pyproject.toml`).
-- Test layout: unit tests in `tests/test_*.py`, end‑to‑end tests in `tests/e2e/test_*.py`; place shared helpers in `tests/conftest.py` or `tests/e2e/conftest.py`.
-- Environment: some tests call LLMs; export `OPENAI_API_KEY` (CI uses a secret). Prefer offline tests with Pydantic AI's `TestModel`/`FunctionModel` where the LLM's judgement isn't under test.
+- Test layout: unit tests in `tests/test_*.py`, end‑to‑end tests in `tests/e2e/test_*.py`; place shared helpers in `tests/e2e/conftest.py`.
+- Unit tests are fully offline; anything that needs a real LLM or Discord belongs in `tests/e2e/` (marked `e2e`, skipped when credentials are missing, run in the Docker `test` stage). Prefer Pydantic AI's `TestModel`/`FunctionModel` where the LLM's judgement isn't under test.
 
 ## Commit Guidelines
 - Follow Conventional Commits: `feat(agent): …`, `fix(discord): …`, `refactor(trigger): …`.

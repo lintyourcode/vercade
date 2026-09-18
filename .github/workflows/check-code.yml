@@ -46,5 +46,3 @@ jobs:
         run: poetry run ruff format .
       - name: Test
         run: poetry run pytest
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
