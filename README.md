@@ -43,7 +43,7 @@ You could set up Vercade to be a general purpose assistant for your community or
 
 ### Discord
 
-1. Create a [Discord bot](https://discord.com/developers/docs/quick-start/getting-started).
+1. [Create an app in Discord's developer portal](https://discord.com/developers/applications?new_application=true)
 2. Under "Bot", enable the "Message Content Intent" and "Server Members Intent" permissions.
 3. Copy the bot token.
 
