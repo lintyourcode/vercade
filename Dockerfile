@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11-slim AS base
 
 RUN apt-get update && apt-get install -y git build-essential
 
@@ -17,5 +17,19 @@ RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
 
 COPY . .
+
+
+# Test image: adds Node.js so the end-to-end tests can launch the Discord
+# MCP server with npx. Build with `docker build --target test`.
+FROM base AS test
+
+RUN apt-get update && apt-get install -y nodejs npm
+
+CMD ["poetry", "run", "pytest", "-q"]
+
+
+# Production image. Kept last so `docker build` builds it by default and the
+# test stage is skipped.
+FROM base AS production
 
 CMD ["poetry", "run", "python", "-m", "vercade"]
