@@ -38,8 +38,7 @@ class DiscordClient(discord.Client):
             await self.on_ready_callback()
 
     async def on_message(self, message: discord.Message) -> None:
-        if message.author == self.user:
+        if message.author == self.user or not self.on_message_callback:
             return
 
-        if self.on_message_callback:
-            await self.on_message_callback(message)
+        await self.on_message_callback(message)
