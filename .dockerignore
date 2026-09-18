@@ -1,0 +1,14 @@
+# Secrets are passed at runtime with `docker run --env-file`.
+*.env
+
+.git
+.github
+.venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.cursor
+.vscode
+screenshots

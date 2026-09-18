@@ -68,7 +68,7 @@ To run the bot in a Docker container, run:
 
 ```sh
 docker build -t vercade .
-docker run --init --privileged vercade
+docker run --env-file .env --init --privileged vercade
 ```
 
 Now, you should be able to invite the bot to your server and start chatting.
