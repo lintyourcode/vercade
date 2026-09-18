@@ -44,7 +44,7 @@ class Message:
         self,
         content: str,
         author: str,
-        created_at: datetime.datetime,
+        created_at: datetime,
         embeds: list[Embed] | None = None,
         reactions: list[Reaction] | None = None,
     ) -> None:
@@ -64,7 +64,7 @@ class Message:
         return self._author
 
     @property
-    def created_at(self) -> datetime.datetime:
+    def created_at(self) -> datetime:
         return self._created_at
 
     @property
