@@ -12,7 +12,7 @@
 - `tests/` — pytest suite.
   - `conftest.py` — in‑process FastMCP server with Discord‑like tools for agent tests.
   - `judge.py` — LLM judge (`match`, async) used by live tests.
-  - `e2e/` — end‑to‑end tests.
+  - `e2e/` — end‑to‑end tests against the real bot and Discord; `conftest.py` provides the `chat` fixture.
 - `.github/workflows/check-code.yml` — CI: ruff lint/format + pytest on 3.11/3.12.
 - `pyproject.toml` — Poetry config, dependencies, pytest settings.
 - `Dockerfile` — container image to run the bot.

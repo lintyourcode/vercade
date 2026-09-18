@@ -35,6 +35,7 @@ READY_TIMEOUT_SECONDS = 120.0
 CONNECT_TIMEOUT_SECONDS = 60.0
 DISCORD_CALL_TIMEOUT_SECONDS = 30.0
 STOP_TIMEOUT_SECONDS = 10.0
+REPLY_TIMEOUT_SECONDS = 120.0
 
 # discord-mcp-plus is used because it supports DISCORD_MCP_TOOLS: the tool
 # allowlist keeps the agent under OpenAI's 128-tool API cap, which
@@ -71,6 +72,7 @@ class E2EServer:
 
 @dataclass(frozen=True)
 class ReceivedMessage:
+    id: int
     author_id: int
     author_name: str
     channel_id: int
@@ -104,6 +106,7 @@ class UserStub:
             return
         self._messages.put(
             ReceivedMessage(
+                id=message.id,
                 author_id=message.author.id,
                 author_name=message.author.name,
                 channel_id=message.channel.id,
@@ -120,20 +123,36 @@ class UserStub:
             timeout=timeout
         )
 
-    def send_message(self, channel_id: int, content: str) -> None:
-        async def _send() -> None:
-            channel = self._client.get_channel(channel_id)
-            if channel is None:
-                channel = await self._client.fetch_channel(channel_id)
-            if not isinstance(channel, discord.abc.Messageable):
-                raise TypeError(f"Channel {channel_id} is not messageable")
-            await channel.send(content)
+    async def _messageable(self, channel_id: int) -> discord.abc.Messageable:
+        channel = self._client.get_channel(channel_id)
+        if channel is None:
+            channel = await self._client.fetch_channel(channel_id)
+        if not isinstance(channel, discord.abc.Messageable):
+            raise TypeError(f"Channel {channel_id} is not messageable")
+        return channel
 
-        self.run(_send())
+    def send_message(self, channel_id: int, content: str) -> int:
+        """
+        Send a message and return its ID.
+        """
+
+        async def _send() -> int:
+            channel = await self._messageable(channel_id)
+            return (await channel.send(content)).id
+
+        return self.run(_send())
 
     def wait_for_message(
-        self, author_id: int, channel_id: int, timeout: float
+        self,
+        author_id: int,
+        channel_id: int,
+        timeout: float,
+        after: int = 0,
     ) -> ReceivedMessage | None:
+        """
+        Wait for a message from `author_id` in `channel_id` sent after message `after`.
+        """
+
         deadline = time.monotonic() + timeout
         while True:
             remaining = deadline - time.monotonic()
@@ -143,7 +162,11 @@ class UserStub:
                 message = self._messages.get(timeout=remaining)
             except queue.Empty:
                 return None
-            if message.author_id == author_id and message.channel_id == channel_id:
+            if (
+                message.author_id == author_id
+                and message.channel_id == channel_id
+                and message.id > after
+            ):
                 return message
 
 
@@ -154,6 +177,44 @@ class VercadeProcess:
 
     def dump_output(self) -> str:
         return "\n".join(self.output)
+
+
+@dataclass(frozen=True)
+class Chat:
+    """
+    A conversation between the user stub and the bot under test in the e2e channel.
+    """
+
+    server: E2EServer
+    channel: E2EChannel
+    vercade: VercadeProcess
+    user_stub: UserStub
+
+    def send(self, content: str) -> int:
+        """
+        Send a message as the user and return its ID.
+        """
+
+        return self.user_stub.send_message(self.channel.id, content)
+
+    def ask(self, content: str) -> ReceivedMessage:
+        """
+        Send a message as the user and return the bot's reply to it.
+        """
+
+        message_id = self.send(content)
+        reply = self.user_stub.wait_for_message(
+            author_id=self.server.vercade_user_id,
+            channel_id=self.channel.id,
+            timeout=REPLY_TIMEOUT_SECONDS,
+            after=message_id,
+        )
+        assert reply is not None, (
+            f"Vercade did not reply to {content!r} within "
+            f"{REPLY_TIMEOUT_SECONDS:.0f}s. Captured output:\n"
+            f"{self.vercade.dump_output()}"
+        )
+        return reply
 
 
 @pytest.fixture(scope="session")
@@ -365,3 +426,13 @@ def vercade_process(
             f"Vercade subprocess exited with code {process.returncode} during "
             f"the test run. Captured output:\n{vercade.dump_output()}"
         )
+
+
+@pytest.fixture
+def chat(
+    e2e_server: E2EServer,
+    e2e_channel: E2EChannel,
+    vercade_process: VercadeProcess,
+    user_stub: UserStub,
+) -> Chat:
+    return Chat(e2e_server, e2e_channel, vercade_process, user_stub)
