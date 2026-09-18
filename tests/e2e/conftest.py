@@ -431,7 +431,7 @@ def vercade_process(
         "VERCADE_IDENTITY": (
             f"You are {e2e_server.vercade_name}, a helpful and friendly chatbot."
         ),
-        "VERCADE_SCHEDULE_INTERVAL": "disabled",
+        "VERCADE_SCHEDULE_INTERVAL": "",
         "MCP_PATH": str(config_path),
         "VERCADE_LOG_LEVEL": "WARNING",
     }

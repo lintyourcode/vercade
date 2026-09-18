@@ -10,29 +10,24 @@ from vercade.social_media import Message, MessageContext, SocialMedia
 def parse_schedule_interval_seconds(value: str | None) -> float | None:
     """Parse VERCADE_SCHEDULE_INTERVAL into seconds.
 
-    ``None``, empty, and ``disabled`` turn scheduling off. Other values are
-    Go-style durations (``15m``, ``2h``, ``1h30m``) or a bare number of seconds.
+    Empty or unset disables scheduling. Any other value must be a Go-style
+    duration with a unit, such as ``30s``, ``15m``, or ``1h30m``.
     """
 
-    if value is None:
+    text = (value or "").strip()
+    if not text:
         return None
 
-    normalized = value.strip().lower()
-    if normalized in {"", "disabled"}:
-        return None
-
+    error = ValueError(
+        "VERCADE_SCHEDULE_INTERVAL must be empty or a duration with a "
+        "unit such as '30s' or '1h'"
+    )
+    if not any(c.isalpha() or c in "µμ" for c in text):
+        raise error
     try:
-        return durationpy.from_str(normalized).total_seconds()
+        return durationpy.from_str(text).total_seconds()
     except durationpy.DurationError:
-        pass
-
-    try:
-        return float(normalized)
-    except ValueError:
-        raise ValueError(
-            "VERCADE_SCHEDULE_INTERVAL must be a duration such as "
-            "'300', '15m', '2h', or 'disabled'"
-        ) from None
+        raise error from None
 
 
 class Trigger:
