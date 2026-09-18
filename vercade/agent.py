@@ -114,5 +114,3 @@ class Agent:
                         args,
                         part.model_response(),
                     )
-        if not tool_calls:
-            raise ValueError(f"No tools were called\n\n{result.output}")

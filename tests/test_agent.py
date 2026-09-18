@@ -1,3 +1,4 @@
+import logging
 from unittest.mock import Mock
 
 import pytest
@@ -54,8 +55,7 @@ async def test__call__uses_identity_and_date_time_in_prompt(mocker):
         temperature=0.5,
         reasoning_effort="low",
     )
-    with pytest.raises(ValueError, match="No tools were called"):
-        await friend("Something happened.")
+    await friend("Something happened.")
 
     assert len(requests) == 1
     assert requests[0].instructions == "You are Proctor."
@@ -64,10 +64,12 @@ async def test__call__uses_identity_and_date_time_in_prompt(mocker):
     )
 
 
-async def test__call__without_tool_calls_raises():
+async def test__call__without_tool_calls_succeeds(caplog):
     friend = Agent(
         identity="You are Proctor.",
         llm=TestModel(custom_output_text="I have nothing to say."),
     )
-    with pytest.raises(ValueError, match="No tools were called"):
+    with caplog.at_level(logging.INFO, logger="vercade.agent"):
         await friend("Something happened.")
+
+    assert "[Thought] I have nothing to say." in caplog.text
