@@ -118,10 +118,13 @@ async def test_on_message_direct_message_does_not_require_guild(
     assert context.channel.name == "alice"
 
 
-async def test_on_message_ignores_the_bots_own_messages(discord_client: DiscordClient):
+async def test_on_message_ignores_the_bots_own_messages(
+    discord_client: DiscordClient, mocker
+):
     discord_client.on_message_callback = AsyncMock()
-    discord_client.user = Mock()
-    await discord_client.on_message(_discord_message(author=discord_client.user))
+    bot_user = Mock()
+    mocker.patch.object(DiscordClient, "user", bot_user)
+    await discord_client.on_message(_discord_message(author=bot_user))
     discord_client.on_message_callback.assert_not_called()
 
 
