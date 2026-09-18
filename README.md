@@ -7,6 +7,7 @@ Vercade is a generic Discord bot that can:
 * :white_check_mark: Process Discord messages with any LLM supported by [Pydantic AI](https://ai.pydantic.dev/models/overview/)
 * :white_check_mark: Follow a custom system prompt
 * :white_check_mark: Use MCP servers to integrate with external services
+* :white_check_mark: Use [Agent Skills](https://agentskills.io) installed on the host
 
 When setting up vercade, you'll attach it to a Discord bot and add the bot to some servers. Whenever a message is sent in a server, vercade will invoke an LLM agent. The agent has access to whichever MCP servers you've configured. It will call whichever tools it needs to, based on a system prompt.
 
@@ -147,6 +148,15 @@ MCP_PATH=mcp.json
   }
 }
 ```
+
+### Skills
+
+Vercade automatically loads [Agent Skills](https://agentskills.io) from the standard locations, so skills installed by other compliant clients are picked up without configuration:
+
+* `~/.vercade/skills/` and `~/.agents/skills/` (user-level)
+* `./.vercade/skills/` and `./.agents/skills/` (relative to the working directory)
+
+Each skill is a directory containing a `SKILL.md`. The LLM sees every skill's name and description and loads a skill's full instructions on demand. By default, bundled `scripts/`, `references/` and `assets/` are not read or executed. Skills become part of the LLM's instructions, so only install skills you trust. The bot fails to start if a skill is invalid or two skills share a name.
 
 ### Logging
 

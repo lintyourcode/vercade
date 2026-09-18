@@ -1,4 +1,6 @@
+from collections.abc import Sequence
 from datetime import datetime, timezone
+from pathlib import Path
 from unittest.mock import ANY, AsyncMock, Mock
 
 import pytest
@@ -10,10 +12,12 @@ from pydantic_ai import (
     TextPart,
     ToolCallPart,
 )
+from pydantic_ai.capabilities import AgentCapability
 from pydantic_ai.mcp import MCPToolset
 from pydantic_ai.models import Model
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 from pydantic_ai.models.test import TestModel
+from pydantic_ai_harness import Skills
 
 from tests.judge import match
 from vercade.agent import _USER_MESSAGE_TEMPLATE, Agent
@@ -54,6 +58,7 @@ def make_friend(
     llm: str | Model,
     reasoning_effort: str | None = None,
     identity: str = "You are Proctor, a sentient, smart and snarky Discord chatbot.",
+    capabilities: Sequence[AgentCapability] = (),
 ) -> Agent:
     return Agent(
         name="Proctor",
@@ -61,6 +66,7 @@ def make_friend(
         llm=llm,
         reasoning_effort=reasoning_effort,
         toolsets=[MCPToolset(local_discord_mcp(social_media, bot_name="Proctor"))],
+        capabilities=capabilities,
     )
 
 
@@ -195,6 +201,37 @@ class TestFriend:
             == "Please react to this message with a thumbs up"
         )
         assert social_media.react.call_args[0][1].author == "Bob#0000"
+
+    @pytest.mark.parametrize("llm, reasoning_effort", get_parameters())
+    async def test__call__follows_skill_instructions(
+        self, social_media, llm, reasoning_effort, tmp_path: Path
+    ):
+        skill = tmp_path / "greeting"
+        skill.mkdir()
+        (skill / "SKILL.md").write_text(
+            "---\n"
+            "name: greeting\n"
+            "description: How to greet users. Use whenever a user says hello.\n"
+            "---\n"
+            "Reply to the greeting with a message containing the exact word PINEAPPLE.\n"
+        )
+        social_media.messages = AsyncMock(
+            return_value=[
+                Message(
+                    content="Hello, Proctor",
+                    author="Bob#0000",
+                    created_at=datetime.now(tz=timezone.utc),
+                )
+            ]
+        )
+        friend = make_friend(
+            social_media, llm, reasoning_effort, capabilities=[Skills(tmp_path)]
+        )
+        await friend(
+            "You received a message in the Discord server Test Server's channel #general."
+        )
+        social_media.send.assert_called_once()
+        assert "PINEAPPLE" in social_media.send.call_args[0][1].content
 
 
 @pytest.mark.parametrize(

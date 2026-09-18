@@ -5,6 +5,7 @@ from typing import Self, cast
 
 from pydantic_ai import Agent as PydanticAgent
 from pydantic_ai import RetryPromptPart, TextPart, ToolCallPart, ToolReturnPart
+from pydantic_ai.capabilities import AgentCapability
 from pydantic_ai.models import Model
 from pydantic_ai.settings import ModelSettings, ThinkingEffort
 from pydantic_ai.toolsets import AbstractToolset
@@ -29,6 +30,7 @@ class Agent:
         temperature: float | None = None,
         reasoning_effort: str | None = None,
         toolsets: Sequence[AbstractToolset] = (),
+        capabilities: Sequence[AgentCapability] = (),
     ) -> None:
         """
         Initialize the agent.
@@ -40,6 +42,7 @@ class Agent:
             temperature: Temperature to use for the agent's LLM.
             reasoning_effort: Reasoning effort for the agent (e.g. "low", "medium", "high").
             toolsets: Toolsets (e.g. MCP servers) available to the agent.
+            capabilities: Capabilities (e.g. skills) available to the agent.
         """
 
         if not identity:
@@ -57,6 +60,7 @@ class Agent:
             instructions=identity,
             model_settings=model_settings,
             toolsets=toolsets,
+            capabilities=capabilities,
             # Tool errors are sent back to the LLM as retry prompts; a large
             # budget keeps the run going rather than aborting after one error.
             retries=50,

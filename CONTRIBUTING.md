@@ -28,6 +28,7 @@ graph LR
     Schedule -->|"Invokes"| Agent
     Agent -->|"Runs"| PydanticAI
     PydanticAI -->|"Calls"| LLM
+    PydanticAI -->|"Loads skills via Skills capability"| SkillDirectories
     PydanticAI -->|"Uses MCP servers via MCPToolset"| FastMCP
     FastMCP --> DiscordMCPServer
     FastMCP --> WebBrowsingMCPServer
@@ -38,16 +39,15 @@ graph LR
 
 * Python 3.11+
 * [Discord.py](https://discordpy.readthedocs.io) listens for new messages
-* [Pydantic AI](https://ai.pydantic.dev) runs the agent loop and calls LLMs
-* [FastMCP](https://gofastmcp.com) provides the MCP client, wrapped in Pydantic AI's [`MCPToolset`](https://ai.pydantic.dev/mcp/client/) (one per server, built by `load_mcp_toolsets` from the `MCP_PATH` config)
+* [Pydantic AI](https://ai.pydantic.dev) loads skills and MCP servers, runs the agent loop and calls LLMs
 
 **Core components:**
 
 * **Discord client**: Discord bot that listens for new messages
 * **Trigger**: Invokes the agent both when a message is received and on a schedule
-* **Agent**: Thin wrapper around a Pydantic AI agent: builds the system prompt (the identity) and user prompt (the event), maps `VERCADE_LLM_TEMPERATURE`/`VERCADE_LLM_REASONING_EFFORT` to model settings, and exposes the user-provided MCP servers as toolsets. MCP tool errors are sent back to the LLM as retry prompts with a large per-tool retry budget (`retries=50`) so a failing tool call doesn't abort the run.
+* **Agent**: Thin wrapper around a Pydantic AI agent: builds the system prompt (the identity) and user prompt (the event), maps `VERCADE_LLM_TEMPERATURE`/`VERCADE_LLM_REASONING_EFFORT` to model settings, and exposes the user-provided MCP servers as toolsets and skills as capabilities. MCP tool errors are sent back to the LLM as retry prompts with a large per-tool retry budget (`retries=50`) so a failing tool call doesn't abort the run.
 
-**Tests:** `tests/test_agent.py` contains both offline tests (Pydantic AI's `TestModel`/`FunctionModel`) and live LLM tests (require `OPENAI_API_KEY`). `tests/conftest.py` provides an in-process FastMCP server with Discord-like tools backed by a mocked `SocialMedia`, so the real MCP code path is exercised without a subprocess.
+**Tests:** `tests/test_skills.py` covers skill directory discovery. `tests/test_agent.py` contains both offline tests (Pydantic AI's `TestModel`/`FunctionModel`) and live LLM tests (require `OPENAI_API_KEY`). `tests/conftest.py` provides an in-process FastMCP server with Discord-like tools backed by a mocked `SocialMedia`, so the real MCP code path is exercised without a subprocess.
 
 ## End-to-end tests
 

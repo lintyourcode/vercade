@@ -11,6 +11,7 @@ python = "^3.11,<3.14"
 python-dotenv = "^1.2.2"
 discord = "^2.3.2"
 pydantic-ai-slim = {extras = ["anthropic", "bedrock", "cohere", "google", "groq", "huggingface", "mcp", "mistral", "openai"], version = "^2.43.0"}
+pydantic-ai-harness = {extras = ["skills"], version = "^0.31.0"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.1.1"

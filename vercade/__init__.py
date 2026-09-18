@@ -10,6 +10,7 @@ from pydantic_ai.mcp import load_mcp_toolsets
 
 from vercade.agent import Agent
 from vercade.discord import DiscordClient
+from vercade.skills import load_skills
 from vercade.trigger import Trigger
 
 
@@ -92,6 +93,8 @@ async def main():
         raise ValueError("MCP_PATH environment variable must be set")
     toolsets = load_mcp_toolsets(os.getenv("MCP_PATH"))
 
+    skills = load_skills()
+
     schedule_interval_seconds = _parse_schedule_interval_seconds(
         os.getenv("VERCADE_SCHEDULE_INTERVAL")
     )
@@ -103,6 +106,7 @@ async def main():
         temperature=temperature,
         reasoning_effort=os.getenv("VERCADE_LLM_REASONING_EFFORT") or None,
         toolsets=toolsets,
+        capabilities=[skills] if skills else (),
     )
     # TODO: Rename `proctor` to `discord`
     proctor = DiscordClient(activity=activity, friend=agent)
