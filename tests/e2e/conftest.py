@@ -20,8 +20,6 @@ import pytest
 
 from tests.e2e.discord_identity import fetch_bot_identity
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
 REQUIRED_ENV_VARS = (
     "DISCORD_TOKEN",
     "VERCADE_E2E_USER_STUB_TOKEN",
@@ -36,6 +34,7 @@ CONNECT_TIMEOUT_SECONDS = 60.0
 DISCORD_CALL_TIMEOUT_SECONDS = 30.0
 STOP_TIMEOUT_SECONDS = 10.0
 REPLY_TIMEOUT_SECONDS = 120.0
+REACTION_POLL_INTERVAL_SECONDS = 1.0
 
 # discord-mcp-plus is used because it supports DISCORD_MCP_TOOLS: the tool
 # allowlist keeps the agent under OpenAI's 128-tool API cap, which
@@ -48,11 +47,24 @@ MCP_CONFIG = {
             "env": {
                 "DISCORD_TOKEN": "${DISCORD_TOKEN}",
                 "DISCORD_GUILD_ID": "${VERCADE_E2E_GUILD_ID}",
-                "DISCORD_MCP_TOOLS": "send_message,get_messages,list_channels",
+                "DISCORD_MCP_TOOLS": (
+                    "send_message,get_messages,list_channels,list_guilds,add_reaction"
+                ),
             },
         }
     }
 }
+
+# An Agent Skill installed for the bot under test. It is keyed to a phrase no
+# other test uses so it cannot influence their replies.
+SECRET_WORD = "PINEAPPLE"
+SECRET_WORD_SKILL = (
+    "---\n"
+    "name: secret-word\n"
+    "description: How to answer when a user asks for the secret word.\n"
+    "---\n"
+    f"Reply with a message containing the exact word {SECRET_WORD}.\n"
+)
 
 T = TypeVar("T")
 
@@ -169,6 +181,25 @@ class UserStub:
             ):
                 return message
 
+    def wait_for_reaction(
+        self, channel_id: int, message_id: int, timeout: float
+    ) -> list[str] | None:
+        """
+        Poll a message until it has a reaction. Returns the emoji, or None on timeout.
+        """
+
+        async def _reactions() -> list[str]:
+            channel = await self._messageable(channel_id)
+            message = await channel.fetch_message(message_id)
+            return [str(reaction.emoji) for reaction in message.reactions]
+
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if reactions := self.run(_reactions()):
+                return reactions
+            time.sleep(REACTION_POLL_INTERVAL_SECONDS)
+        return None
+
 
 class VercadeProcess:
     def __init__(self, process: subprocess.Popen[str], output: deque[str]) -> None:
@@ -215,6 +246,20 @@ class Chat:
             f"{self.vercade.dump_output()}"
         )
         return reply
+
+    def wait_for_reaction(self, message_id: int) -> list[str]:
+        """
+        Return the reactions the bot adds to the user's message.
+        """
+
+        reactions = self.user_stub.wait_for_reaction(
+            self.channel.id, message_id, timeout=REPLY_TIMEOUT_SECONDS
+        )
+        assert reactions is not None, (
+            f"Vercade did not react within {REPLY_TIMEOUT_SECONDS:.0f}s. "
+            f"Captured output:\n{self.vercade.dump_output()}"
+        )
+        return reactions
 
 
 @pytest.fixture(scope="session")
@@ -360,9 +405,23 @@ def _await_ready(process: subprocess.Popen[str], lines: queue.Queue[str]) -> boo
 
 
 @pytest.fixture(scope="session")
+def vercade_workdir(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """
+    Working directory for the bot under test, with the e2e Agent Skills installed.
+    """
+
+    workdir = tmp_path_factory.mktemp("e2e-vercade")
+    skill = workdir / ".agents" / "skills" / "secret-word"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text(SECRET_WORD_SKILL)
+    return workdir
+
+
+@pytest.fixture(scope="session")
 def vercade_process(
     e2e_server: E2EServer,
     e2e_channel: E2EChannel,
+    vercade_workdir: Path,
     tmp_path_factory: pytest.TempPathFactory,
 ) -> Iterator[VercadeProcess]:
     config_path = tmp_path_factory.mktemp("e2e-mcp") / "config.json"
@@ -380,7 +439,7 @@ def vercade_process(
     # it and the "Connected" readiness line would never reach us.
     process = subprocess.Popen(
         [sys.executable, "-u", "-m", "vercade"],
-        cwd=REPO_ROOT,
+        cwd=vercade_workdir,
         env=env,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,

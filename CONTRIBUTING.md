@@ -57,7 +57,7 @@ The end-to-end suite runs the real bot (as a subprocess) plus a user-stub bot th
 
 * A second Discord bot token for the user stub
 * **Message Content intent enabled in the [Discord Developer Portal](https://discord.com/developers/applications) for both bots** — the stub needs it to read replies, and the `discord-mcp-plus` MCP server needs it to read messages
-* Node.js with `npx` on your `PATH`
+* Docker (or, to run on the host, Node.js with `npx` on your `PATH`)
 * `OPENAI_API_KEY` set in `.env`
 
 Set `VERCADE_E2E_USER_STUB_TOKEN` and `VERCADE_E2E_GUILD_ID` in `.env` (see `template.env`).
@@ -74,8 +74,13 @@ The script prints an invite link (server pre-selected) for any bot that has not 
 
 **Run:**
 
+The suite is meant to run in the `test` stage of the Dockerfile, which adds Node.js and runs all tests (unit and end-to-end) with a clean home directory:
+
 ```
-poetry run pytest tests/e2e -q
+docker build --target test -t vercade-test .
+docker run --rm --init --env-file .env vercade-test
 ```
+
+The bot under test discovers Agent Skills from its home and working directories, so running the suite directly on the host (`poetry run pytest tests/e2e -q`) also loads any skills in your own `~/.agents/skills` or `~/.vercade/skills` into the bot.
 
 The first run downloads the MCP package via `npx` and can take a few minutes.

@@ -18,6 +18,7 @@ VERCADE_PERMISSIONS = discord.Permissions(
     view_channel=True,
     send_messages=True,
     read_message_history=True,
+    add_reactions=True,
 )
 # The user stub creates and deletes a fresh channel for every test run.
 USER_STUB_PERMISSIONS = discord.Permissions(

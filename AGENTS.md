@@ -15,7 +15,7 @@
   - `e2e/` — end‑to‑end tests against the real bot and Discord; `conftest.py` provides the `chat` fixture.
 - `.github/workflows/check-code.yml` — CI: ruff lint/format + pytest on 3.11/3.12.
 - `pyproject.toml` — Poetry config, dependencies, pytest settings.
-- `Dockerfile` — container image to run the bot.
+- `Dockerfile` — container image to run the bot; its `test` stage adds Node.js and runs the test suite.
 
 ## Development Commands
 - Install deps: `poetry install`
@@ -25,6 +25,7 @@
 - Type check (best‑effort): `poetry run mypy vercade`
 - Tests: `poetry run pytest -q` (subset: `pytest -k name -q`)
 - Docker: `docker build -t vercade . && docker run --env-file .env --init --privileged vercade`
+- End‑to‑end tests: `docker build --target test -t vercade-test . && docker run --rm --init --env-file .env vercade-test`
 
 ## Style Guidelines
 - Python 3.11-3.13, 4‑space indent, type hints encouraged.
