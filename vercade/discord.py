@@ -1,6 +1,3 @@
-import asyncio
-import re
-
 import discord
 
 from vercade.agent import Agent
@@ -77,23 +74,6 @@ class DiscordClient(discord.Client, SocialMedia):
         if self.on_ready_callback:
             await self.on_ready_callback()
 
-    def _format_message_for_discord(
-        self, message: Message, channel: discord.TextChannel
-    ) -> str:
-        content = message.content
-
-        # Replace @username mentions with Discord mentions
-        all_users = {user.name: user for user in channel.guild.members}
-        mentions = re.findall(r"@(\w+)", content)
-        for username in mentions:
-            user = all_users.get(username)
-            if not user:
-                print(f"User {username} not found")
-
-            content = content.replace(f"@{username}", f"<@{user.id}>")
-
-        return content
-
     async def on_message(self, message: discord.Message) -> None:
         if message.author == self.user:
             return
@@ -121,17 +101,6 @@ class DiscordClient(discord.Client, SocialMedia):
             raise ValueError(f"Channel {context.channel.id} not found")
         return guild, channel
 
-    async def _get_message(
-        self,
-        guild: discord.Guild,
-        channel: discord.TextChannel,
-        message: Message,
-        fetch_limit: int = 100,
-    ) -> discord.Message:
-        async for msg in channel.history(limit=fetch_limit):
-            if msg.content == message.content:
-                return msg
-
     async def messages(
         self, context: MessageContext, limit: int = 100
     ) -> list[Message]:
@@ -144,26 +113,3 @@ class DiscordClient(discord.Client, SocialMedia):
                 ]
             )
         )
-
-    # TODO(#17): Remove unused `send`
-    async def send(self, context: MessageContext, message: Message) -> None:
-        if not self.is_ready():
-            return
-
-        _, channel = await self._get_guild_and_channel(context)
-        async with channel.typing():
-            await asyncio.sleep(len(message.content) / 20.0)
-        await channel.send(self._format_message_for_discord(message, channel))
-
-    # TODO(#17): Remove unused `react`
-    async def react(
-        self, context: MessageContext, message: Message, emoji: str
-    ) -> None:
-        """
-        React to a message with an emoji.
-        """
-
-        guild, channel = await self._get_guild_and_channel(context)
-        discord_message = await self._get_message(guild, channel, message)
-        discord_emoji = discord.utils.get(guild.emojis, name=emoji) or emoji
-        await discord_message.add_reaction(discord_emoji)
