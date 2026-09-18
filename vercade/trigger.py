@@ -30,7 +30,6 @@ class Trigger:
         self._scheduled_tasks: dict[str, asyncio.Task] = {}
         self._schedule_interval_seconds = schedule_interval_seconds
 
-        self._client = client
         client.on_ready_callback = self.connect
         client.on_message_callback = self.read_message
 
