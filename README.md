@@ -71,6 +71,13 @@ docker build -t vercade .
 docker run --env-file .env --init --privileged vercade
 ```
 
+To run the example bot (`template.env`), build the `example` stage instead:
+
+```sh
+docker build --target example -t vercade-example .
+docker run --env-file .env --init --privileged vercade-example
+```
+
 Now, you should be able to invite the bot to your server and start chatting, in a channel or by direct message.
 
 ## Configuration

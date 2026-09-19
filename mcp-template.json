@@ -2,7 +2,7 @@
   "mcpServers": {
     "discord": {
       "command": "npx",
-      "args": ["-y", "@quadslab.io/discord-mcp@latest"],
+      "args": ["-y", "@quadslab.io/discord-mcp@2.1.1"],
       "env": {
         "DISCORD_TOKEN": "${DISCORD_TOKEN}",
         "DISCORD_GUILD_ID": "${DISCORD_GUILD_ID}"
